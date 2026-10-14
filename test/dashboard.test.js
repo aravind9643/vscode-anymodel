@@ -201,7 +201,7 @@ const failed = (async () => run([
     t.click(t.$('#banners [data-action="set-key"]'));
     assert.deepStrictEqual(t.sent.at(-1), { type: "setApiKey", name: "Claude" });
     t.click(t.$('[data-tab="providers"]'));
-    const card = t.$$(".card").find((x) => x.textContent.includes("Claude"));
+    const card = t.$$("#panel-providers .card").find((x) => x.textContent.includes("Claude"));
     assert.ok(card.textContent.includes("API key needed on this machine") && card.textContent.includes("X-Api-Key in plain text") && card.textContent.includes("Anthropic API"));
   }],
 
@@ -299,6 +299,56 @@ const failed = (async () => run([
     assert.strictEqual(t.$$("#tbody tr").length, 1);
     assert.ok(t.$("#tbody .model-name").textContent.includes("GPT 4o"));
     t.input(t.$("#q"), "");
+  }],
+
+  ["overview is the landing page once providers exist: KPIs, attention, checklist", () => {
+    const o = boot();
+    o.deliver({ type: "state", state: { ...baseState(), models: baseState().models.map((m) => (m.key === "Groq::llama-70b" ? { ...m, selected: true } : m)) } });
+    assert.ok(o.$("#panel-overview").classList.contains("active"));
+    assert.strictEqual(o.$("#pageTitle").textContent, "Overview");
+    const kpi = Object.fromEntries(o.$$(".kpi").map((k) => [k.querySelector(".kpi-label").textContent, k.querySelector(".kpi-value").textContent]));
+    assert.strictEqual(kpi["Providers online"], "2/4");
+    assert.strictEqual(kpi["In Copilot"], "1");
+    assert.ok(o.$("#panel-overview").textContent.includes("Claude needs an API key on this machine"));
+    assert.strictEqual(o.$$("#panel-overview img").length, 0, "provider names are escaped on the overview too");
+    // The checklist's next step is a route; dismissing it sticks across state pushes.
+    assert.ok(o.$(".checklist").textContent.includes("Create a fallback route"));
+    o.click(o.$('[data-action="hide-checklist"]'));
+    o.deliver({ type: "state", state: baseState() });
+    assert.strictEqual(o.$(".checklist"), null);
+    // KPI tiles navigate.
+    o.click(o.$$(".kpi")[0]);
+    assert.ok(o.$("#panel-providers").classList.contains("active"));
+    assert.strictEqual(o.$("#pageTitle").textContent, "Providers");
+  }],
+
+  ["filters disclosure and the more-actions menu", () => {
+    const o = boot();
+    o.deliver({ type: "state", state: baseState() });
+    o.click(o.$('[data-tab="models"]'));
+    assert.ok(o.$("#chips").classList.contains("hidden"), "no filter row until asked for");
+    o.click(o.$('[data-action="toggle-filters"]'));
+    assert.ok(!o.$("#chips").classList.contains("hidden") && !o.$("#chips").classList.contains("collapsed"));
+    o.click(o.$('[data-cap="reasoning"]'));
+    o.click(o.$('[data-action="toggle-filters"]'));
+    // Collapsed, the active filter stays visible and counted on the button.
+    assert.ok(o.$("#chips").classList.contains("collapsed") && !o.$("#chips").classList.contains("hidden"));
+    assert.ok(o.$("#filtersBtn").textContent.includes("1"));
+    assert.strictEqual(o.$$("#tbody tr").length, 1);
+    o.click(o.$('[data-action="reset-filters"]'));
+
+    assert.ok(o.$(".menu").classList.contains("hidden"));
+    o.click(o.$('[data-action="menu"]'));
+    assert.ok(!o.$(".menu").classList.contains("hidden"));
+    o.click(o.$('.menu [data-action="curate-top"]'));
+    assert.deepStrictEqual(o.sent.at(-1), { type: "curateTop", limit: 10 });
+    assert.ok(o.$(".menu").classList.contains("hidden"), "picking an item closes the menu");
+    o.click(o.$('[data-action="menu"]'));
+    o.key(o.$("#q"), "Escape");
+    assert.ok(o.$(".menu").classList.contains("hidden"), "Escape closes the menu");
+    o.click(o.$('[data-action="menu"]'));
+    o.click(o.$("#bulk .grow"));
+    assert.ok(o.$(".menu").classList.contains("hidden"), "clicking elsewhere closes the menu");
   }],
 ]))();
 

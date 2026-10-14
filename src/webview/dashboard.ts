@@ -23,6 +23,12 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     status: saved.status || "all",
     caps: new Set(saved.caps || []),
     sort: saved.sort || { col: "smart", dir: 1 },
+    /** Whether the capability filter row is expanded. */
+    showFilters: !!saved.showFilters,
+    /** Hides the Overview setup checklist once the user dismisses it. */
+    hideChecklist: !!saved.hideChecklist,
+    /** Id of the open "⋯" menu, if any. */
+    menu: null as string|null,
     editor: null as any,
     cardResults: {} as Record<string, { ok: boolean; text: string }>,
     /** Key of the model whose limits editor row is open. */
@@ -31,37 +37,40 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     window: null as number[]|null,
   };
   const persist = () =>
-    vscode.setState({ tab: ui.tab, q: ui.q, provider: ui.provider, status: ui.status, caps: [...ui.caps], sort: ui.sort });
+    vscode.setState({
+      tab: ui.tab, q: ui.q, provider: ui.provider, status: ui.status, caps: [...ui.caps], sort: ui.sort,
+      showFilters: ui.showFilters, hideChecklist: ui.hideChecklist,
+    });
   const post = (msg: WebviewMessage) => vscode.postMessage(msg);
 
   const PRESETS = [
-    { id: "ollama", name: "Ollama", url: "http://localhost:11434", note: "Local · no key" },
-    { id: "lmstudio", name: "LM Studio", url: "http://localhost:1234", note: "Local · no key" },
-    { id: "vllm", name: "vLLM", url: "http://localhost:8000", note: "Self-hosted" },
-    { id: "localai", name: "LocalAI", url: "http://localhost:8080", note: "Local · no key" },
-    { id: "openrouter", name: "OpenRouter", url: "https://openrouter.ai/api", note: "API key", key: true },
-    { id: "openai", name: "OpenAI", url: "https://api.openai.com/v1", note: "API key", key: true },
-    { id: "gemini", name: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai", note: "API key", key: true },
-    { id: "deepseek", name: "DeepSeek", url: "https://api.deepseek.com", note: "API key", key: true },
-    { id: "groq", name: "Groq", url: "https://api.groq.com/openai/v1", note: "API key", key: true },
-    { id: "cerebras", name: "Cerebras", url: "https://api.cerebras.ai/v1", note: "Ultra-fast · API key", key: true },
-    { id: "together", name: "Together AI", url: "https://api.together.xyz/v1", note: "API key", key: true },
-    { id: "mistral", name: "Mistral AI", url: "https://api.mistral.ai/v1", note: "API key", key: true },
-    { id: "perplexity", name: "Perplexity", url: "https://api.perplexity.ai", note: "Sonar search · API key", key: true },
-    { id: "xai", name: "xAI (Grok)", url: "https://api.x.ai/v1", note: "API key", key: true },
-    { id: "sambanova", name: "SambaNova", url: "https://api.sambanova.ai/v1", note: "Fast · API key", key: true },
+    { id: "ollama", group: "local", name: "Ollama", url: "http://localhost:11434", note: "Local · no key" },
+    { id: "lmstudio", group: "local", name: "LM Studio", url: "http://localhost:1234", note: "Local · no key" },
+    { id: "vllm", group: "local", name: "vLLM", url: "http://localhost:8000", note: "Self-hosted" },
+    { id: "localai", group: "local", name: "LocalAI", url: "http://localhost:8080", note: "Local · no key" },
+    { id: "openrouter", group: "gateway", name: "OpenRouter", url: "https://openrouter.ai/api", note: "API key", key: true },
+    { id: "openai", group: "cloud", name: "OpenAI", url: "https://api.openai.com/v1", note: "API key", key: true },
+    { id: "gemini", group: "cloud", name: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai", note: "API key", key: true },
+    { id: "deepseek", group: "cloud", name: "DeepSeek", url: "https://api.deepseek.com", note: "API key", key: true },
+    { id: "groq", group: "cloud", name: "Groq", url: "https://api.groq.com/openai/v1", note: "API key", key: true },
+    { id: "cerebras", group: "cloud", name: "Cerebras", url: "https://api.cerebras.ai/v1", note: "Ultra-fast · API key", key: true },
+    { id: "together", group: "cloud", name: "Together AI", url: "https://api.together.xyz/v1", note: "API key", key: true },
+    { id: "mistral", group: "cloud", name: "Mistral AI", url: "https://api.mistral.ai/v1", note: "API key", key: true },
+    { id: "perplexity", group: "cloud", name: "Perplexity", url: "https://api.perplexity.ai", note: "Sonar search · API key", key: true },
+    { id: "xai", group: "cloud", name: "xAI (Grok)", url: "https://api.x.ai/v1", note: "API key", key: true },
+    { id: "sambanova", group: "cloud", name: "SambaNova", url: "https://api.sambanova.ai/v1", note: "Fast · API key", key: true },
     {
-      id: "github", name: "GitHub Models", url: "https://models.github.ai/inference", note: "GitHub token", key: true,
+      id: "github", group: "cloud", name: "GitHub Models", url: "https://models.github.ai/inference", note: "GitHub token", key: true,
       chatEndpoint: "https://models.github.ai/inference/chat/completions", modelsEndpoint: "https://models.github.ai/catalog/models",
     },
-    { id: "anthropic", name: "Anthropic", url: "https://api.anthropic.com", note: "Claude · native API", key: true, api: "anthropic" },
+    { id: "anthropic", group: "cloud", name: "Anthropic", url: "https://api.anthropic.com", note: "Claude · native API", key: true, api: "anthropic" },
     {
-      id: "azure", name: "Azure OpenAI", url: "https://YOUR-RESOURCE.openai.azure.com/openai/v1", note: "api-key · deployments as model IDs", key: true,
+      id: "azure", group: "cloud", name: "Azure OpenAI", url: "https://YOUR-RESOURCE.openai.azure.com/openai/v1", note: "api-key · deployments as model IDs", key: true,
       authHeader: "api-key", autoDiscover: false,
     },
-    { id: "freellmapi", name: "FreeLLMAPI", url: "http://127.0.0.1:31415", note: "Local router" },
-    { id: "omniroute", name: "OmniRoute", url: "http://localhost:20128", note: "Local router" },
-    { id: "custom", name: "", url: "", note: "Any OpenAI-compatible URL", label: "Custom" },
+    { id: "freellmapi", group: "gateway", name: "FreeLLMAPI", url: "http://127.0.0.1:31415", note: "Local router" },
+    { id: "omniroute", group: "gateway", name: "OmniRoute", url: "http://localhost:20128", note: "Local router" },
+    { id: "custom", group: "custom", name: "", url: "", note: "Any OpenAI-compatible URL", label: "Custom" },
   ];
 
   const STATUS_ORDER = { working: 0, testing: 1, untested: 2, failed: 3 };
@@ -127,47 +136,62 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
 
   // -------------------------------------------------------------- shell
 
+  const TABS = [
+    { id: "overview", label: "Overview", icon: "home", desc: "Provider health, spend and what Copilot can use right now." },
+    { id: "models", label: "Models", icon: "symbol-class", desc: "Choose which verified models appear in the Copilot model picker." },
+    { id: "providers", label: "Providers", icon: "server", desc: "Endpoints the router discovers models from. Keys stay in VS Code secret storage." },
+    { id: "routes", label: "Routes", icon: "git-merge", desc: "One picker entry that falls back across several models when one is down or rate-limited." },
+    { id: "settings", label: "Settings", icon: "settings-gear", desc: "Verification, chat, Copilot integration and usage." },
+  ];
+
   $("#app").innerHTML = `
-    <header class="app-header">
-      <div class="topbar">
-        <div class="brand">${icon("hubot")}LLM Router</div>
-        <div class="stats" id="stats"></div>
-        <div class="top-actions">
-          <button class="btn" data-action="refresh" id="refreshBtn" title="Re-fetch model lists from every provider">${icon("refresh")}Refresh</button>
+    <nav class="rail" aria-label="Sections">
+      <div class="brand"><span class="brand-mark">${icon("hubot")}</span><span class="brand-text">LLM Router</span></div>
+      <div class="nav" role="tablist" aria-orientation="vertical">
+        ${TABS.map((t) => `<button class="tab" role="tab" data-action="tab" data-tab="${t.id}" title="${t.label}">${icon(t.icon)}<span class="tab-label">${t.label}</span>${
+          t.id === "overview" || t.id === "settings" ? "" : `<span class="count" id="count-${t.id}">0</span>`
+        }</button>`).join("")}
+      </div>
+      <div class="rail-status" id="stats" aria-label="Status"></div>
+      <div class="rail-foot">
+        <button class="rail-link" data-action="logs" title="Show the extension log">${icon("output")}<span class="tab-label">Logs</span></button>
+      </div>
+    </nav>
+    <div class="main">
+      <header class="page-head">
+        <div class="page-title"><h1 id="pageTitle"></h1><p id="pageDesc"></p></div>
+        <div class="page-actions">
+          <button class="btn" data-action="refresh" id="refreshBtn" title="Re-fetch model lists from every provider">${icon("refresh")}<span class="btn-label">Refresh</span></button>
           <button class="btn primary" data-action="verify-untested" id="verifyBtn">${icon("beaker")}Verify</button>
         </div>
-      </div>
+      </header>
       <div class="progress hidden" id="progress"></div>
-      <nav class="tabs" role="tablist">
-        <button class="tab" role="tab" data-action="tab" data-tab="models">${icon("symbol-class")}Models <span class="count" id="count-models">0</span></button>
-        <button class="tab" role="tab" data-action="tab" data-tab="providers">${icon("server")}Providers <span class="count" id="count-providers">0</span></button>
-        <button class="tab" role="tab" data-action="tab" data-tab="routes">${icon("git-merge")}Routes <span class="count" id="count-routes">0</span></button>
-        <button class="tab" role="tab" data-action="tab" data-tab="settings">${icon("settings-gear")}Settings</button>
-      </nav>
-    </header>
-    <main class="app-body">
-      <section class="panel" id="panel-models">
-        <div class="toolbar">
-          <div class="row">
-            <div class="search">${icon("search")}<input type="search" id="q" placeholder="Search models  ( / )" aria-label="Search models"></div>
-            <select id="provSel" aria-label="Filter by provider"></select>
-            <div class="segmented" id="statusSeg" role="group" aria-label="Filter by status"></div>
+      <main class="app-body">
+        <section class="panel scroll" id="panel-overview"></section>
+        <section class="panel" id="panel-models">
+          <div class="toolbar">
+            <div class="row">
+              <div class="search">${icon("search")}<input type="search" id="q" placeholder="Search models" aria-label="Search models"><kbd>/</kbd></div>
+              <select id="provSel" aria-label="Filter by provider"></select>
+              <div class="segmented" id="statusSeg" role="group" aria-label="Filter by status"></div>
+              <button class="btn ghost" data-action="toggle-filters" id="filtersBtn" aria-controls="chips"></button>
+            </div>
+            <div class="row chips" id="chips"></div>
+            <div id="banners" class="banners"></div>
+            <div class="bulkbar" id="bulk"></div>
           </div>
-          <div class="row" id="chips"></div>
-          <div id="banners" class="toolbar"></div>
-          <div class="bulkbar" id="bulk"></div>
-        </div>
-        <div class="table-wrap" id="tableWrap">
-          <table>
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-      </section>
-      <section class="panel scroll" id="panel-providers"></section>
-      <section class="panel scroll" id="panel-routes"></section>
-      <section class="panel scroll" id="panel-settings"></section>
-    </main>
+          <div class="table-wrap" id="tableWrap">
+            <table>
+              <thead><tr id="thead"></tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel scroll" id="panel-providers"></section>
+        <section class="panel scroll" id="panel-routes"></section>
+        <section class="panel scroll" id="panel-settings"></section>
+      </main>
+    </div>
     <div id="toast" class="toast hidden" role="status"></div>`;
 
   (($("#q") as unknown) as HTMLInputElement).value = ui.q;
@@ -175,12 +199,33 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   // ------------------------------------------------------------- render
 
   function render() {
-    if (!ui.tab) ui.tab = S.providers.length ? "models" : "providers";
+    if (!ui.tab) ui.tab = S.providers.length ? "overview" : "providers";
     renderHeader();
+    renderOverview();
     renderModels();
     if (!ui.editor) renderProviders();
     renderRoutes();
     renderSettings();
+  }
+
+  /** Small coloured status label, e.g. "● Online". */
+  const pill = (kind: string, text: string, title = "") => `<span class="pill ${kind}"${title ? ` title="${esc(title)}"` : ""}>${esc(text)}</span>`;
+
+  /** Two-letter avatar whose colour is derived from the name, so a provider keeps its colour everywhere. */
+  function monogram(name: string) {
+    const words = String(name || "?").replace(/[^\p{L}\p{N} ]/gu, " ").trim().split(/\s+/);
+    const letters = (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || "?").slice(0, 2)).toUpperCase();
+    let h = 0;
+    for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return `<span class="mono-av c${h % 6}" aria-hidden="true">${esc(letters)}</span>`;
+  }
+
+  function budgetMeter() {
+    const limit = S.settings.budgetLimitUsd;
+    if (!limit || limit <= 0) return "";
+    const pct = Math.min(100, Math.round((S.spend / limit) * 100));
+    const cls = pct >= 100 ? "err" : pct >= 75 ? "warn" : "ok";
+    return `<div class="meter" title="Budget: ${money(S.spend)} of $${limit} (${pct}%)" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span class="${cls}" style="width:${pct}%"></span></div>`;
   }
 
   function renderHeader() {
@@ -191,28 +236,32 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     const untested = S.models.filter((m) => m.status === "untested").length;
     const anyOffline = enabled.some((p) => p.online === false);
 
+    const limit = S.settings.budgetLimitUsd;
     $("#stats").innerHTML = enabled.length
-      ? `<span class="stat"><span class="dot ${anyOffline ? "err" : online ? "ok" : ""}"></span><strong>${online}/${enabled.length}</strong> providers online</span>
-         <span class="stat">${icon("pass")}<strong>${working}</strong> verified</span>
-         <span class="stat">${icon("copilot")}<strong>${inCopilot}</strong> in Copilot</span>` +
-        (S.spend > 0 ? `<span class="stat" title="Estimated from reported usage × model prices (list or provider prices; correct them per model with ⚙)">${icon("credit-card")}<strong>~${money(S.spend)}</strong> spent</span>` : "") +
-        (S.settings.budgetLimitUsd && S.settings.budgetLimitUsd > 0
-          ? (() => {
-              const pct = Math.min(100, Math.round((S.spend / S.settings.budgetLimitUsd) * 100));
-              const colorCls = pct >= 100 ? "err" : pct >= 75 ? "warn" : "ok";
-              return `<span class="stat budget-pill" title="Budget: ${money(S.spend)} of $${S.settings.budgetLimitUsd} (${pct}%)"><span class="budget-mini-track"><span class="budget-mini-fill ${colorCls}" style="width:${pct}%"></span></span><strong>${pct}%</strong> of $${S.settings.budgetLimitUsd} budget</span>`;
-            })()
+      ? `<div class="rail-heading">Status</div>
+         <div class="stat"><span class="dot ${anyOffline ? "err" : online ? "ok" : ""}"></span><span><strong>${online}/${enabled.length}</strong> providers online</span></div>
+         <div class="stat">${icon("pass")}<span><strong>${working}</strong> verified</span></div>
+         <div class="stat">${icon("copilot")}<span><strong>${inCopilot}</strong> in Copilot</span></div>` +
+        (S.spend > 0 || (limit && limit > 0)
+          ? `<div class="stat" title="Estimated from reported usage × model prices (list or provider prices; correct them per model with ⚙)">${icon("credit-card")}<span><strong>~${money(S.spend)}</strong> spent${
+              limit && limit > 0 ? ` <span class="muted">of $${limit}</span>` : ""
+            }</span></div>${budgetMeter()}`
           : "")
       : "";
+
+    const tab = TABS.find((t) => t.id === (ui.editor && ui.tab === "providers" ? "providers" : ui.tab)) || TABS[0];
+    $("#pageTitle").textContent = ui.editor && ui.tab === "providers" ? (ui.editor.original ? `Edit ${ui.editor.original}` : "Add a provider") : tab.label;
+    $("#pageDesc").textContent = ui.editor && ui.tab === "providers" ? "Pick a preset or point at any OpenAI-compatible endpoint." : tab.desc;
 
     const vb = ($("#verifyBtn") as HTMLButtonElement);
     if (S.verifying) {
       vb.dataset.action = "cancel-verify";
       vb.innerHTML = `${icon("debug-stop")}Stop`;
       vb.disabled = false;
+      vb.title = "Stop verifying";
     } else {
       vb.dataset.action = "verify-untested";
-      vb.innerHTML = `${icon("beaker")}Verify ${untested ? `untested (${untested})` : "untested"}`;
+      vb.innerHTML = `${icon("beaker")}Verify ${untested ? `untested <span class="btn-count">${untested}</span>` : "untested"}`;
       vb.disabled = untested === 0;
       vb.title = untested ? "Test every model that has no recent result" : "Every model has a fresh result — use “Re-test shown” to force";
     }
@@ -221,7 +270,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     if (S.verifying) {
       const { done, total, working: w, failed } = S.verifying;
       pr.classList.remove("hidden");
-      pr.innerHTML = `${icon("sync", "spin")}<span>Verifying ${done}/${total}</span>
+      pr.innerHTML = `${icon("sync", "spin")}<span>Verifying <strong>${done}</strong> of ${total}</span>
         <div class="track"><div class="fill" style="width:${total ? (done / total) * 100 : 0}%"></div></div>
         <span class="muted">${w} ok · ${failed} failed</span>`;
     } else pr.classList.add("hidden");
@@ -229,8 +278,117 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     $("#count-models").textContent = String(S.models.length);
     $("#count-providers").textContent = String(S.providers.length);
     $("#count-routes").textContent = String(S.routes.length);
-    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", (t as HTMLElement).dataset.tab === ui.tab));
+    document.querySelectorAll(".tab").forEach((t) => {
+      const on = (t as HTMLElement).dataset.tab === ui.tab;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", String(on));
+    });
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === `panel-${ui.tab}`));
+  }
+
+  // ----------------------------------------------------------- overview
+
+  function renderOverview() {
+    const el = $("#panel-overview");
+    if (!S.providers.length) {
+      el.innerHTML = welcome();
+      return;
+    }
+    const enabled = S.providers.filter((p) => p.enabled);
+    const online = enabled.filter((p) => p.online).length;
+    const working = S.models.filter((m) => m.status === "working");
+    const failed = S.models.filter((m) => m.status === "failed").length;
+    const untested = S.models.filter((m) => m.status === "untested" || m.status === "testing").length;
+    const lineup = S.models.filter((m) => m.selected);
+    const inCopilot = lineup.filter((m) => m.status === "working").length;
+    const liveRoutes = S.routes.filter((r) => r.available).length;
+    const limit = S.settings.budgetLimitUsd;
+
+    const kpi = (label: string, value: string, foot: string, tab: string, extra = "") =>
+      `<button class="kpi" data-action="tab" data-tab="${tab}"><span class="kpi-label">${label}</span><span class="kpi-value">${value}</span>${extra}<span class="kpi-foot">${foot}</span></button>`;
+    const kpis = `<div class="kpis">
+      ${kpi("Providers online", `${online}<small>/${enabled.length}</small>`, enabled.length - online ? `<span class="warn">${enabled.length - online} need attention</span>` : "All reachable", "providers")}
+      ${kpi("Verified models", `${working.length}<small>/${S.models.length}</small>`, [untested && `${untested} untested`, failed && `${failed} failed`].filter(Boolean).join(" · ") || "All checked", "models")}
+      ${kpi("In Copilot", String(inCopilot), liveRoutes ? `plus ${plural(liveRoutes, "route")}` : `of ${plural(lineup.length, "selected model")}`, "models")}
+      ${kpi("Estimated spend", `~${money(S.spend)}`, limit && limit > 0 ? `of $${limit} budget` : "No budget set", "settings", budgetMeter())}
+    </div>`;
+
+    const alerts = bannerList();
+    const attention = alerts.length
+      ? `<section class="block"><h2 class="block-title">${icon("bell")}Needs attention <span class="count">${alerts.length}</span></h2><div class="banners">${alerts.join("")}</div></section>`
+      : "";
+
+    const steps = [
+      { done: S.providers.length > 0, title: "Connect a provider", text: "Local servers or a cloud API.", action: "add-provider", cta: "Add provider" },
+      { done: working.length > 0, title: "Verify models", text: "A quick health check — only working models reach Copilot.", action: "verify-untested", cta: "Verify now" },
+      { done: lineup.length > 0, title: "Add models to Copilot", text: "Tick models on the Models page.", action: "tab", tab: "models", cta: "Pick models" },
+      { done: S.routes.length > 0, title: "Create a fallback route", text: "Optional — one entry that survives outages.", action: "tab", tab: "routes", cta: "Open routes" },
+    ];
+    const doneCount = steps.filter((s) => s.done).length;
+    const checklist = !ui.hideChecklist && doneCount < steps.length
+      ? `<section class="block card checklist">
+          <div class="block-head"><h2 class="block-title">${icon("rocket")}Get started <span class="muted">${doneCount} of ${steps.length} done</span></h2>
+            <button class="icon-btn" data-action="hide-checklist" title="Dismiss" aria-label="Dismiss checklist">${icon("close")}</button></div>
+          <div class="meter"><span class="ok" style="width:${(doneCount / steps.length) * 100}%"></span></div>
+          <ol class="steps">${steps.map((s, i) => `<li class="${s.done ? "done" : ""}">
+            <span class="step-mark">${s.done ? icon("check") : i + 1}</span>
+            <span class="step-text"><strong>${s.title}</strong><span>${s.text}</span></span>
+            ${s.done ? "" : `<button class="btn small" data-action="${s.action}"${s.tab ? ` data-tab="${s.tab}"` : ""}>${s.cta}</button>`}
+          </li>`).join("")}</ol>
+        </section>`
+      : "";
+
+    const providerRows = S.providers.map((p) => {
+      const n = S.models.filter((m) => m.providerName === p.name).length;
+      const state = !p.enabled ? pill("muted", "Disabled") : p.needsKey ? pill("warn", "Needs key") : p.online === undefined ? pill("muted", "Connecting…") : p.online ? pill("ok", "Online") : pill("err", "Offline", p.error);
+      return `<li class="list-row">${monogram(p.name)}
+        <span class="list-main"><span class="list-title">${esc(p.name)}</span><span class="list-sub">${esc(p.endpointUrl)}</span></span>
+        <span class="list-meta num">${p.online && p.latencyMs !== undefined ? `${p.latencyMs}ms` : ""}</span>
+        <span class="list-meta">${plural(n, "model")}</span>
+        ${state}
+        <button class="icon-btn" data-action="${p.needsKey ? "set-key" : "edit-provider"}" data-name="${esc(p.name)}" title="${p.needsKey ? "Enter API key" : "Edit provider"}">${icon(p.needsKey ? "key" : "edit")}</button>
+      </li>`;
+    }).join("");
+
+    const lineupRows = [...lineup]
+      .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || (a.latencyMs || 0) - (b.latencyMs || 0))
+      .map((m) => `<li class="list-row">${monogram(m.providerName)}
+        <span class="list-main"><span class="list-title">${esc(m.name)}</span><span class="list-sub">${esc(m.providerName)}${m.stats?.tokensPerSec ? ` · ${m.stats.tokensPerSec} tok/s` : ""}</span></span>
+        ${m.status === "working" ? `<span class="list-meta num">${m.latencyMs}ms</span>${pill("ok", "Live")}` : m.status === "failed" ? pill("err", "Failed", m.error) : pill("muted", m.status === "testing" ? "Testing…" : "Pending check")}
+      </li>`)
+      .concat(S.routes.map((r) => `<li class="list-row"><span class="mono-av route" aria-hidden="true">${icon("git-merge")}</span>
+        <span class="list-main"><span class="list-title">${esc(r.name)}</span><span class="list-sub">Route · ${r.available}/${r.models.length} members working</span></span>
+        ${r.available ? pill("ok", "Live") : pill("muted", "Hidden")}</li>`))
+      .join("");
+
+    el.innerHTML = `<div class="overview">
+      ${kpis}
+      ${attention}
+      ${checklist}
+      <div class="split">
+        <section class="block card"><div class="block-head"><h2 class="block-title">${icon("server")}Providers</h2>
+          <button class="link-btn" data-action="tab" data-tab="providers">Manage</button></div>
+          <ul class="list">${providerRows}</ul></section>
+        <section class="block card"><div class="block-head"><h2 class="block-title">${icon("copilot")}Copilot lineup</h2>
+          <button class="link-btn" data-action="tab" data-tab="models">Choose models</button></div>
+          ${lineupRows ? `<ul class="list">${lineupRows}</ul>` : `<div class="empty small">Nothing in the Copilot picker yet.<br><br><button class="btn small primary" data-action="tab" data-tab="models">Pick models</button></div>`}</section>
+      </div>
+    </div>`;
+  }
+
+  /** First-run screen shared by the Overview and Providers pages. */
+  function welcome() {
+    return `<div class="hero">
+      <span class="hero-mark">${icon("hubot")}</span>
+      <h2>Bring your own models to Copilot Chat</h2>
+      <p>Connect a local server or a cloud API. The router checks every model and only shows the ones that work in the Copilot model picker.</p>
+      <div class="hero-actions">
+        <button class="btn primary" data-action="add-provider">${icon("add")}Add a provider</button>
+        <button class="btn" data-action="scan-local">${icon("search")}Scan local servers</button>
+        <button class="btn" data-action="import">${icon("cloud-download")}Import config</button>
+      </div>
+      ${presetGrid(null)}
+    </div>`;
   }
 
   // ------------------------------------------------------------- models
@@ -313,14 +471,21 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       })
       .join("");
 
-    // Capability chips
+    // Capability chips: collapsed to just the active ones unless "Filters" is open.
     const statusBase = base.filter((m) => matchesStatus(m, ui.status));
     const anyFilter = ui.q || ui.provider || ui.status !== "all" || ui.caps.size;
-    $("#chips").innerHTML =
+    const fb = $("#filtersBtn");
+    fb.innerHTML = `${icon("filter")}<span class="btn-label">Filters</span>${ui.caps.size ? `<span class="btn-count">${ui.caps.size}</span>` : ""}${icon(ui.showFilters ? "chevron-up" : "chevron-down", "chev")}`;
+    fb.classList.toggle("on", ui.showFilters || ui.caps.size > 0);
+    fb.setAttribute("aria-expanded", String(ui.showFilters));
+    const chips = $("#chips");
+    chips.classList.toggle("collapsed", !ui.showFilters);
+    chips.classList.toggle("hidden", !ui.showFilters && !anyFilter);
+    chips.innerHTML =
       CAP_FILTERS.map(
         (f) =>
-          `<button class="chip ${ui.caps.has(f.id) ? "active" : ""}" data-action="cap" data-cap="${f.id}" aria-pressed="${ui.caps.has(f.id)}">${icon(f.icon)}${f.label} <span class="n">${statusBase.filter(f.test).length}</span></button>`
-      ).join("") + (anyFilter ? `<span class="sep"></span><button class="link-btn" data-action="reset-filters">Clear filters</button>` : "");
+          `<button class="chip ${ui.caps.has(f.id) ? "active" : ""}" data-action="cap" data-cap="${f.id}" aria-pressed="${ui.caps.has(f.id)}">${icon(f.icon)}${f.label} <span class="n">${statusBase.filter(f.test).length}</span>${ui.caps.has(f.id) && !ui.showFilters ? icon("close", "x") : ""}</button>`
+      ).join("") + (anyFilter ? `<button class="link-btn" data-action="reset-filters">${icon("clear-all")}Clear filters</button>` : "");
 
     renderBanners();
 
@@ -328,14 +493,20 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     const inCopilot = S.models.filter((m) => m.selected && m.status === "working").length;
     const shownSelectable = rows.filter((m) => m.status !== "failed" && !m.selected).length;
     const shownSelected = rows.filter((m) => m.selected).length;
+    const anySelected = S.models.some((m) => m.selected);
     $("#bulk").innerHTML = S.models.length
       ? `<span class="grow">Showing <strong>${rows.length}</strong> of ${S.models.length} · <strong>${inCopilot}</strong> in Copilot</span>
-         <button class="btn small" data-action="curate-top" title="Select top 10 fastest coding/reasoning models and deselect the rest">${icon("star")}Curate Top 10</button>
-         <button class="btn small" data-action="deselect-all" ${inCopilot > 0 || S.models.some((m) => m.selected) ? "" : "disabled"} title="Deselect all models from Copilot">${icon("clear-all")}Deselect All</button>
-         <button class="btn small" data-action="bulk-add" ${shownSelectable ? "" : "disabled"} title="Add every shown model that has not failed">${icon("add")}Add shown to Copilot</button>
-         <button class="btn small" data-action="bulk-remove" ${shownSelected ? "" : "disabled"}>${icon("remove")}Remove shown</button>
-         <button class="btn small" data-action="bulk-test" ${rows.length && !S.verifying ? "" : "disabled"} title="Re-test every shown model, ignoring cached results">${icon("beaker")}Re-test shown</button>
-         <button class="btn small" data-action="append-chat-lm" title="Append models to VS Code native chatLanguageModels.json">${icon("file-code")}Append to chatLanguageModels.json</button>`
+         <div class="btn-group" role="group" aria-label="Apply to the shown models">
+           <button class="btn small" data-action="bulk-add" ${shownSelectable ? "" : "disabled"} title="Add every shown model that has not failed">${icon("add")}Add shown</button>
+           <button class="btn small" data-action="bulk-remove" ${shownSelected ? "" : "disabled"} title="Remove every shown model from Copilot">${icon("remove")}Remove shown</button>
+           <button class="btn small" data-action="bulk-test" ${rows.length && !S.verifying ? "" : "disabled"} title="Re-test every shown model, ignoring cached results">${icon("beaker")}Re-test shown</button>
+         </div>
+         ${menu("bulk", "More actions", [
+           `<button role="menuitem" data-action="curate-top">${icon("star")}<span>Curate top 10<small>Keep the 10 fastest coding and reasoning models</small></span></button>`,
+           `<button role="menuitem" data-action="deselect-all" ${anySelected ? "" : "disabled"}>${icon("clear-all")}<span>Remove all from Copilot</span></button>`,
+           "",
+           `<button role="menuitem" data-action="append-chat-lm">${icon("file-code")}<span>Append to chatLanguageModels.json<small>Register selected models as native Copilot endpoints</small></span></button>`,
+         ])}`
       : "";
 
     // Table
@@ -382,8 +553,24 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     ui.window = [first, last];
   }
 
+  /** A "⋯" button with a popup menu; "" in items draws a separator. */
+  function menu(id: string, label: string, items: string[]) {
+    const open = ui.menu === id;
+    return `<div class="menu-wrap">
+      <button class="icon-btn ${open ? "on" : ""}" data-action="menu" data-menu="${id}" title="${label}" aria-label="${label}" aria-haspopup="menu" aria-expanded="${open}">${icon("ellipsis")}</button>
+      <div class="menu ${open ? "" : "hidden"}" role="menu">${items.map((i) => i || `<div class="menu-sep" role="separator"></div>`).join("")}</div>
+    </div>`;
+  }
+
   function renderBanners() {
-    const out = [];
+    const out = bannerList();
+    $("#banners").innerHTML = out.join("");
+    $("#banners").classList.toggle("hidden", !out.length);
+  }
+
+  /** Things the user should act on — shown on the Models page and the Overview. */
+  function bannerList() {
+    const out: string[] = [];
     const enabled = S.providers.filter((p) => p.enabled);
     for (const p of enabled.filter((p) => p.needsKey)) {
       out.push(`<div class="banner warn">${icon("key")}<span class="grow"><strong>${esc(p.name)}</strong> needs an API key on this machine — keys are stored per machine and are not synced.</span>
@@ -429,8 +616,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       out.push(`<div class="banner warn">${icon("warning")}<span class="grow">Estimated spend of <strong>${money(S.spend)}</strong> has reached or exceeded your budget limit of <strong>$${S.settings.budgetLimitUsd}</strong>.</span>
         <button class="btn small" data-action="tab" data-tab="settings">Adjust budget</button></div>`);
     }
-    $("#banners").innerHTML = out.join("");
-    $("#banners").classList.toggle("hidden", !out.length);
+    return out;
   }
 
   function emptyModels() {
@@ -538,16 +724,13 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   function renderProviders() {
     const el = $("#panel-providers");
     if (!S.providers.length) {
-      el.innerHTML = `<div class="hero">${icon("plug")}
-        <h2>Connect a model provider</h2>
-        <p>Pick a preset or point at any OpenAI-compatible endpoint. Verified models can then be added to the Copilot model picker.</p>
-        <div style="margin-bottom:14px"><button class="btn" data-action="scan-local">${icon("search")}Scan local servers</button></div>
-        ${presetGrid(null)}</div>`;
+      el.innerHTML = welcome();
       return;
     }
-    el.innerHTML = `<div class="section-head"><h2>Providers</h2>
-        <button class="btn" data-action="scan-local" title="Scan local ports (11434, 1234, 8000, 8080) for running LLMs">${icon("search")}Scan local</button>
-        <button class="btn" data-action="import">${icon("cloud-download")}Import</button>
+    const online = S.providers.filter((p) => p.enabled && p.online).length;
+    el.innerHTML = `<div class="section-head"><h2>${plural(S.providers.length, "provider")} <span class="muted">· ${online} online</span></h2>
+        <button class="btn" data-action="scan-local" title="Scan local ports (11434, 1234, 8000, 8080) for running LLMs">${icon("search")}<span class="btn-label">Scan local</span></button>
+        <button class="btn" data-action="import" title="Import providers, routes and overrides from a JSON file">${icon("cloud-download")}<span class="btn-label">Import</span></button>
         <button class="btn primary" data-action="add-provider">${icon("add")}Add provider</button></div>
       <div class="cards">${S.providers.map(providerCard).join("")}</div>`;
   }
@@ -555,43 +738,76 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   function providerCard(p) {
     const name = esc(p.name);
     const models = S.models.filter((m) => m.providerName === p.name);
+    const working = models.filter((m) => m.status === "working").length;
     const inCopilot = models.filter((m) => m.selected && m.status === "working").length;
-    const dot = !p.enabled ? "" : p.online === true ? "ok" : p.online === false ? "err" : "";
-    const meta = [];
-    if (!p.enabled) meta.push(`<span>${icon("circle-slash")}Disabled</span>`);
-    else if (p.online === undefined) meta.push(`<span>${icon("loading", "spin")}Connecting…</span>`);
-    else if (p.online) meta.push(`<span>${icon("pulse")}${p.latencyMs ?? "?"}ms</span><span>${icon("symbol-class")}${plural(models.length, "model")}${inCopilot ? ` · ${inCopilot} in Copilot` : ""}</span>`);
-    else meta.push(`<span class="err" title="${esc(p.error)}">${icon("error")}${esc((p.error || "Unreachable").slice(0, 80))}</span>`);
-    if (p.needsKey) meta.push(`<span class="warn" title="The server rejected the credentials. API keys are stored per machine and do not sync.">${icon("key")}API key needed on this machine</span>`);
-    if (p.plaintextSecretHeaders?.length)
-      meta.push(`<span class="warn" title="Edit and save the provider to move these values to secret storage.">${icon("warning")}${esc(p.plaintextSecretHeaders.join(", "))} in plain text</span>`);
-    if (p.api && p.api !== "openai") meta.push(`<span>${icon(p.api === "anthropic" ? "sparkle" : "server-process")}${p.api === "anthropic" ? "Anthropic API" : "Ollama native"}</span>`);
-    if (p.keySource === "secret") meta.push(`<span title="Stored in VS Code secret storage">${icon("lock")}Key secured</span>`);
-    else if (p.keySource === "settings")
-      meta.push(`<span class="warn" title="This key is in settings.json as plain text. Edit and save the provider to move it to secret storage.">${icon("warning")}Key in plain-text settings</span>`);
-    const res = ui.cardResults[p.name];
+    const state = !p.enabled
+      ? pill("muted", "Disabled")
+      : p.needsKey
+        ? pill("warn", "Needs key")
+        : p.online === undefined
+          ? pill("muted", "Connecting…")
+          : p.online
+            ? pill("ok", "Online")
+            : pill("err", "Offline", p.error);
+    const protocol = p.api === "anthropic" ? "Anthropic API" : p.api === "ollama" ? "Ollama native" : "OpenAI API";
 
-    return `<div class="card ${p.enabled ? "" : "off"}">
-      <div class="p-head"><span class="p-dot ${dot}"></span><span class="p-name" title="${name}">${name}</span>
-        <button class="icon-btn" data-action="delete-provider" data-name="${name}" title="Delete provider" aria-label="Delete ${name}">${icon("trash")}</button>
-        <label class="switch" title="${p.enabled ? "Disable" : "Enable"} provider"><input type="checkbox" data-action="toggle-provider" data-name="${name}" ${p.enabled ? "checked" : ""} aria-label="Enable ${name}"><span></span></label></div>
-      <div class="p-url">${esc(p.endpointUrl)}</div>
-      <div class="p-meta">${meta.join("")}</div>
-      <div class="p-actions">
-        ${p.needsKey ? `<button class="btn small primary" data-action="set-key" data-name="${name}">${icon("key")}Enter API key</button>` : ""}
-        <button class="btn small" data-action="test-provider" data-name="${name}">${icon("plug")}Test</button>
-        <button class="btn small" data-action="verify-provider" data-name="${name}" ${p.enabled && models.length && !S.verifying ? "" : "disabled"}>${icon("beaker")}Verify models</button>
-        ${p.kind === "ollama" && p.enabled ? `<button class="btn small" data-action="pull-ollama" data-name="${name}" title="Download a model from the Ollama library">${icon("cloud-download")}Pull model</button>` : ""}
-        <button class="btn small" data-action="edit-provider" data-name="${name}">${icon("edit")}Edit</button>
+    const notes = [];
+    if (p.enabled && p.online === false && p.error) notes.push(`<div class="note err" title="${esc(p.error)}">${icon("error")}<span>${esc(p.error.slice(0, 120))}</span></div>`);
+    if (p.needsKey) notes.push(`<div class="note warn" title="The server rejected the credentials. API keys are stored per machine and do not sync.">${icon("key")}<span>API key needed on this machine</span></div>`);
+    if (p.plaintextSecretHeaders?.length)
+      notes.push(`<div class="note warn" title="Edit and save the provider to move these values to secret storage.">${icon("warning")}<span>${esc(p.plaintextSecretHeaders.join(", "))} in plain text</span></div>`);
+    if (p.keySource === "settings")
+      notes.push(`<div class="note warn" title="This key is in settings.json as plain text. Edit and save the provider to move it to secret storage.">${icon("warning")}<span>Key in plain-text settings</span></div>`);
+    const res = ui.cardResults[p.name];
+    if (res) notes.push(`<div class="note ${res.ok ? "ok" : "err"}">${icon(res.text === "Connecting…" ? "loading" : res.ok ? "pass" : "error", res.text === "Connecting…" ? "spin" : "")}<span>${esc(res.text)}</span></div>`);
+
+    const metric = (label: string, value: string, title = "") => `<div class="metric"${title ? ` title="${esc(title)}"` : ""}><span class="metric-value">${value}</span><span class="metric-label">${label}</span></div>`;
+
+    return `<article class="card provider ${p.enabled ? "" : "off"}">
+      <header class="p-head">${monogram(p.name)}
+        <div class="p-title"><span class="p-name" title="${name}">${name}</span><span class="p-url" title="${esc(p.endpointUrl)}">${esc(p.endpointUrl)}</span></div>
+        ${state}
+        <label class="switch" title="${p.enabled ? "Disable" : "Enable"} provider"><input type="checkbox" data-action="toggle-provider" data-name="${name}" ${p.enabled ? "checked" : ""} aria-label="Enable ${name}"><span></span></label>
+      </header>
+      <div class="metrics">
+        ${metric("Latency", p.enabled && p.online && p.latencyMs !== undefined ? `${p.latencyMs}<small>ms</small>` : "—")}
+        ${metric("Models", String(models.length), `${working} working`)}
+        ${metric("In Copilot", String(inCopilot))}
+        ${metric("Protocol", `<span class="metric-text">${icon(p.api === "anthropic" ? "sparkle" : p.api === "ollama" ? "server-process" : "plug")}${protocol}</span>`)}
       </div>
-      ${res ? `<div class="inline-result ${res.ok ? "ok" : "err"}">${esc(res.text)}</div>` : ""}
-    </div>`;
+      <div class="p-tags">
+        ${p.keySource === "secret" ? `<span class="tag subtle" title="Stored in VS Code secret storage">${icon("lock")}Key secured</span>` : ""}
+        ${p.remote === false || /localhost|127\.0\.0\.1/.test(p.endpointUrl) ? `<span class="tag subtle">${icon("vm")}Local</span>` : ""}
+        ${p.autoDiscover === false ? `<span class="tag subtle" title="Models come from the manual list">${icon("list-unordered")}Manual models</span>` : ""}
+      </div>
+      ${notes.length ? `<div class="notes">${notes.join("")}</div>` : ""}
+      <footer class="p-actions">
+        ${p.needsKey ? `<button class="btn small primary" data-action="set-key" data-name="${name}">${icon("key")}Enter API key</button>` : ""}
+        <button class="btn small" data-action="test-provider" data-name="${name}" title="Check the connection and count the listed models">${icon("plug")}Test</button>
+        <button class="btn small" data-action="verify-provider" data-name="${name}" ${p.enabled && models.length && !S.verifying ? "" : "disabled"} title="Re-test every model of this provider">${icon("beaker")}Verify models</button>
+        ${p.kind === "ollama" && p.enabled ? `<button class="btn small" data-action="pull-ollama" data-name="${name}" title="Download a model from the Ollama library">${icon("cloud-download")}Pull model</button>` : ""}
+        <span class="grow"></span>
+        <button class="icon-btn" data-action="edit-provider" data-name="${name}" title="Edit provider" aria-label="Edit ${name}">${icon("edit")}</button>
+        <button class="icon-btn danger" data-action="delete-provider" data-name="${name}" title="Delete provider" aria-label="Delete ${name}">${icon("trash")}</button>
+      </footer>
+    </article>`;
   }
 
+  const PRESET_GROUPS = [
+    { id: "local", label: "Local & self-hosted" },
+    { id: "cloud", label: "Cloud APIs" },
+    { id: "gateway", label: "Gateways & routers" },
+    { id: "custom", label: "Other" },
+  ];
+
   function presetGrid(activeId) {
-    return `<div class="presets">${PRESETS.map(
-      (p) => `<button class="preset ${activeId === p.id ? "active" : ""}" data-action="preset" data-preset="${p.id}"><strong>${esc(p.label || p.name)}</strong><span>${esc(p.note)}</span></button>`
-    ).join("")}</div>`;
+    return `<div class="preset-groups">${PRESET_GROUPS.map((g) => `<div class="preset-group">
+        <div class="group-label">${g.label}</div>
+        <div class="presets">${PRESETS.filter((p) => p.group === g.id).map(
+          (p) => `<button class="preset ${activeId === p.id ? "active" : ""}" data-action="preset" data-preset="${p.id}" aria-pressed="${activeId === p.id}">${
+            p.id === "custom" ? `<span class="mono-av route" aria-hidden="true">${icon("link")}</span>` : monogram(p.name)
+          }<span class="preset-text"><strong>${esc(p.label || p.name)}</strong><span>${esc(p.note)}</span></span></button>`
+        ).join("")}</div></div>`).join("")}</div>`;
   }
 
   // ------------------------------------------------------------- editor
@@ -631,6 +847,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
 
   function closeEditor() {
     ui.editor = null;
+    renderHeader();
     renderProviders();
   }
 
@@ -649,10 +866,13 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <input type="${opts.type || "text"}" id="f-${id}" data-field="${id}" value="${esc(value)}" placeholder="${esc(opts.placeholder || "")}" ${opts.type === "number" ? 'min="1" max="600"' : ""} spellcheck="false" autocomplete="off">
         ${opts.hint ? `<div class="hint">${opts.hint}</div>` : ""}<div class="error" id="err-${id}">${esc(e.errors[id] || "")}</div></div>`;
 
+    const step = (n: number, title: string, sub: string) =>
+      `<div class="form-section-head"><span class="step-mark">${n}</span><span><h3>${title}</h3><p>${sub}</p></span></div>`;
     $("#panel-providers").innerHTML = `<div class="editor">
-      <button class="btn small back" data-action="close-editor">${icon("arrow-left")}Providers</button>
-      <div class="section-head"><h2>${e.original ? `Edit ${esc(e.original)}` : "Add a provider"}</h2></div>
-      ${e.original ? "" : `<div class="field"><label>Start from a preset</label>${presetGrid(e.preset)}</div>`}
+      <button class="btn small ghost back" data-action="close-editor">${icon("arrow-left")}All providers</button>
+      ${e.original ? "" : `<section class="form-section">${step(1, "Choose a provider", "Presets fill in the URL and authentication. Pick Custom for any OpenAI-compatible server.")}${presetGrid(e.preset)}</section>`}
+      <section class="form-section">
+      ${step(e.original ? 1 : 2, "Connection", "Where the router sends requests and how it authenticates.")}
       <div class="form">
         <div class="field-row">
           ${field("name", "Name", d.name, { placeholder: "e.g. Ollama" })}
@@ -669,8 +889,10 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         </div>
         <label class="toggle-line"><span class="switch"><input type="checkbox" data-field="autoDiscover" ${d.autoDiscover ? "checked" : ""}><span></span></span>
           Discover models automatically from the <code>/models</code> endpoint</label>
-        <details class="advanced" ${advancedOpen ? "open" : ""}>
-          <summary>Advanced</summary>
+      </div>
+      </section>
+        <details class="advanced form-section" ${advancedOpen ? "open" : ""}>
+          <summary>${icon("chevron-right", "chev")}<span><h3>Advanced</h3><p>API type, custom endpoints, timeouts, headers and manual model IDs.</p></span></summary>
           <div class="form">
             <div class="field-row">
               ${select("api", "API type", d.api, [["", "Automatic"], ["openai", "OpenAI-compatible"], ["ollama", "Ollama native"], ["anthropic", "Anthropic Messages API"]], "Automatic picks Ollama native for Ollama servers and Anthropic for api.anthropic.com.")}
@@ -702,7 +924,6 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
           <button class="btn" data-action="close-editor">Cancel</button>
           <button class="btn primary" data-action="save-draft" ${e.saving ? "disabled" : ""}>${icon("save")}${e.original ? "Save changes" : "Add provider"}</button>
         </div>
-      </div>
     </div>`;
     updateUrlPreview();
   }
@@ -809,46 +1030,58 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     const options = [...S.models]
       .filter((m) => m.status !== "failed")
       .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.name.localeCompare(b.name));
+    const POLICIES = [
+      ["priority", "Priority", "Try members in order"],
+      ["round-robin", "Round-robin", "Spread requests across members"],
+      ["least-latency", "Least latency", "Fastest verified member first"],
+    ];
     const memberLine = (r, k, i) => {
       const m = byKey.get(k);
       const st = !m ? `<span class="status failed">${icon("question")}missing</span>` :
-        m.status === "working" ? `<span class="status working">${icon("pass-filled")}${m.latencyMs}ms</span>` :
+        m.status === "working" ? `<span class="status working">${icon("pass-filled")}<span class="lat">${m.latencyMs}ms</span></span>` :
         m.status === "failed" ? `<span class="status failed">${icon("error")}failed — skipped</span>` :
         `<span class="status untested">${icon("circle-outline")}untested</span>`;
       return `<li class="member">
         <span class="order">${i + 1}</span>
+        ${monogram(m ? m.providerName : "?")}
         <span class="m-text"><span class="model-name">${esc(m ? m.name : k)}</span><span class="model-id">${esc(m ? m.providerName : "")}</span></span>
         ${st}
-        <button class="icon-btn" data-action="route-move" data-route="${esc(r.name)}" data-index="${i}" data-dir="-1" title="Move up" ${i === 0 ? "disabled" : ""}>${icon("arrow-up")}</button>
-        <button class="icon-btn" data-action="route-move" data-route="${esc(r.name)}" data-index="${i}" data-dir="1" title="Move down" ${i === r.models.length - 1 ? "disabled" : ""}>${icon("arrow-down")}</button>
-        <button class="icon-btn" data-action="route-remove" data-route="${esc(r.name)}" data-index="${i}" title="Remove from route">${icon("close")}</button>
+        <span class="member-actions">
+          <button class="icon-btn" data-action="route-move" data-route="${esc(r.name)}" data-index="${i}" data-dir="-1" title="Move up" aria-label="Move up" ${i === 0 ? "disabled" : ""}>${icon("arrow-up")}</button>
+          <button class="icon-btn" data-action="route-move" data-route="${esc(r.name)}" data-index="${i}" data-dir="1" title="Move down" aria-label="Move down" ${i === r.models.length - 1 ? "disabled" : ""}>${icon("arrow-down")}</button>
+          <button class="icon-btn" data-action="route-remove" data-route="${esc(r.name)}" data-index="${i}" title="Remove from route" aria-label="Remove from route">${icon("close")}</button>
+        </span>
       </li>`;
     };
-    const cards = S.routes.map((r) => `<div class="card route">
-        <div class="p-head"><span class="p-dot ${r.available ? "ok" : "err"}"></span><span class="p-name">${esc(r.name)}</span>
+    const cards = S.routes.map((r) => {
+      const policy = r.policy === "round-robin" || r.policy === "least-latency" ? r.policy : "priority";
+      return `<article class="card route">
+        <header class="p-head"><span class="mono-av route" aria-hidden="true">${icon("git-merge")}</span>
+          <div class="p-title"><span class="p-name">${esc(r.name)}</span><span class="p-sub">${r.available}/${r.models.length} working · ${r.available ? "in Copilot" : "hidden until a member works"}</span></div>
+          ${r.available ? pill("ok", "Live") : pill("muted", "Hidden")}
           <select class="policy-select" data-action="route-policy" data-route="${esc(r.name)}" aria-label="Route policy" title="How members are tried">
-            <option value="priority" ${r.policy !== "round-robin" && r.policy !== "least-latency" ? "selected" : ""}>Priority</option>
-            <option value="round-robin" ${r.policy === "round-robin" ? "selected" : ""}>Round-robin</option>
-            <option value="least-latency" ${r.policy === "least-latency" ? "selected" : ""}>Least latency</option>
+            ${POLICIES.map(([v, label, t]) => `<option value="${v}" title="${t}" ${policy === v ? "selected" : ""}>${label}</option>`).join("")}
           </select>
-          <span class="muted">${r.available}/${r.models.length} working · ${r.available ? "in Copilot" : "hidden until a member works"}</span>
-          <button class="icon-btn" data-action="route-delete" data-route="${esc(r.name)}" title="Delete route">${icon("trash")}</button></div>
-        <ol class="members">${r.models.map((k, i) => memberLine(r, k, i)).join("") || `<li class="muted">No models yet — add one below.</li>`}</ol>
-        <div class="row">
-          <input type="text" class="route-filter" data-route-filter="${esc(r.name)}" placeholder="Filter models…" aria-label="Filter models to add to ${esc(r.name)}">
+          <button class="icon-btn danger" data-action="route-delete" data-route="${esc(r.name)}" title="Delete route" aria-label="Delete route ${esc(r.name)}">${icon("trash")}</button></header>
+        <ol class="members">${r.models.map((k, i) => memberLine(r, k, i)).join("") || `<li class="member empty-member muted">${icon("info")}No models yet — add one below.</li>`}</ol>
+        <div class="row add-member">
+          ${icon("add", "muted")}
+          <input type="text" class="route-filter" data-route-filter="${esc(r.name)}" placeholder="Filter…" aria-label="Filter models to add to ${esc(r.name)}">
           <select data-route-add="${esc(r.name)}" aria-label="Add a model to ${esc(r.name)}">
             <option value="">Add a model…</option>
             ${options.filter((m) => !r.models.includes(m.key)).map((m) => `<option value="${esc(m.key)}">${esc(m.name)} — ${esc(m.providerName)}${m.status === "working" ? "" : " (untested)"}</option>`).join("")}
           </select>
         </div>
-      </div>`).join("");
+      </article>`;
+    }).join("");
     el.innerHTML = `<div class="routes">
-      <div class="section-head"><h2>Routes</h2></div>
-      <p class="muted intro">A route is one entry in the Copilot model picker that tries several models in order. If a model is down, rate-limited or errors before answering, the next one takes over — e.g. a fast local model first, a cloud model as backup.</p>
-      <div class="row new-route"><input type="text" id="newRouteName" placeholder="Route name, e.g. Coding (auto)" aria-label="New route name">
-        <button class="btn primary" data-action="route-create">${icon("add")}Create route</button>
-        <button class="btn" data-action="auto-routes" title="Generate recommended Fast Coding, Deep Reasoning, and Balanced routes from verified working models">${icon("sparkle")}Auto-generate smart routes</button></div>
-      <div class="cards single">${cards || `<div class="empty">${icon("git-merge")}No routes yet.</div>`}</div>
+      <div class="card new-route">
+        <div class="row"><input type="text" id="newRouteName" placeholder="New route name, e.g. Coding (auto)" aria-label="New route name">
+          <button class="btn primary" data-action="route-create">${icon("add")}Create route</button>
+          <button class="btn" data-action="auto-routes" title="Generate recommended Fast Coding, Deep Reasoning, and Balanced routes from verified working models">${icon("sparkle")}Auto-generate</button></div>
+        <p class="muted intro">${icon("info")}If a member is down, rate-limited or errors before answering, the next one takes over — e.g. a fast local model first and a cloud model as backup.</p>
+      </div>
+      <div class="cards single">${cards || `<div class="empty">${icon("git-merge")}<strong>No routes yet</strong><br>Create one above, or let the router build Fast Coding, Deep Reasoning and Balanced routes from your verified models.<br><br><button class="btn primary" data-action="auto-routes">${icon("sparkle")}Auto-generate smart routes</button></div>`}</div>
     </div>`;
   }
 
@@ -858,47 +1091,57 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     const el = $("#panel-settings");
     if (el.contains(document.activeElement) && document.activeElement?.tagName === "INPUT") return;
     const s = S.settings;
+    const section = (ic: string, title: string, desc: string, body: string, cls = "") =>
+      `<section class="card settings-section ${cls}"><div class="settings-head">${icon(ic)}<div><h3>${title}</h3>${desc ? `<p>${desc}</p>` : ""}</div></div>${body}</section>`;
+    const row = (title: string, desc: string, control: string) =>
+      `<div class="setting"><div class="text"><div class="setting-title">${title}</div><div class="setting-desc">${desc}</div></div><div class="control">${control}</div></div>`;
+    const toggle = (key: string, on: boolean, label: string) =>
+      `<label class="switch"><input type="checkbox" data-setting="${key}" ${on ? "checked" : ""} aria-label="${label}"><span></span></label>`;
+
     el.innerHTML = `<div class="settings">
-      <div class="card"><h3>Verification</h3><div class="desc">Copilot only lists models that passed a health check. Results are cached so models aren't re-tested on every start.</div>
-        <div class="setting"><div class="text"><div>Parallel checks</div><div>How many models are tested at once (1–25).</div></div>
-          <input type="number" min="1" max="25" data-setting="testConcurrency" value="${esc(s.testConcurrency)}" aria-label="Parallel checks"></div>
-        <div class="setting"><div class="text"><div>Parallel checks per remote provider</div><div>Keeps bulk checks under paid APIs' rate limits (1–25). Local servers use the overall limit.</div></div>
-          <input type="number" min="1" max="25" data-setting="providerConcurrency" value="${esc(s.providerConcurrency)}" aria-label="Parallel checks per remote provider"></div>
-        <div class="setting"><div class="text"><div>Keep results for (hours)</div><div>Selected models are re-checked automatically when their result expires.</div></div>
-          <input type="number" min="1" max="720" data-setting="cacheTtlHours" value="${esc(s.cacheTtlHours)}" aria-label="Cache lifetime in hours"></div>
-        <div class="setting"><div class="text"><div>Tool-calling check</div><div>“Full” also checks that the model calls a tool (2 requests per model). “Basic” only checks chat.</div></div>
-          <select data-setting="toolCheck" aria-label="Tool-calling check">
+      ${section("beaker", "Verification", "Copilot only lists models that passed a health check. Results are cached so models aren't re-tested on every start.",
+        row("Parallel checks", "How many models are tested at once (1–25).",
+          `<input type="number" min="1" max="25" data-setting="testConcurrency" value="${esc(s.testConcurrency)}" aria-label="Parallel checks">`) +
+        row("Parallel checks per remote provider", "Keeps bulk checks under paid APIs' rate limits (1–25). Local servers use the overall limit.",
+          `<input type="number" min="1" max="25" data-setting="providerConcurrency" value="${esc(s.providerConcurrency)}" aria-label="Parallel checks per remote provider">`) +
+        row("Keep results for (hours)", "Selected models are re-checked automatically when their result expires.",
+          `<input type="number" min="1" max="720" data-setting="cacheTtlHours" value="${esc(s.cacheTtlHours)}" aria-label="Cache lifetime in hours">`) +
+        row("Tool-calling check", "“Full” also checks that the model calls a tool (2 requests per model). “Basic” only checks chat.",
+          `<select data-setting="toolCheck" aria-label="Tool-calling check">
             <option value="full" ${s.toolCheck !== "basic" ? "selected" : ""}>Full</option>
-            <option value="basic" ${s.toolCheck === "basic" ? "selected" : ""}>Basic</option></select></div>
-        <div class="setting"><div class="text"><div>Prune stale cache</div><div>Remove cache entries for deleted models or results expired past 2× cache lifetime.</div></div>
-          <button class="btn" data-action="prune-cache">${icon("discard")}Prune stale</button></div>
-        <div class="setting"><div class="text"><div>Clear verification results</div><div>Forget every health-check result and start over.</div></div>
-          <button class="btn danger" data-action="clear-cache">${icon("trash")}Clear</button></div>
-      </div>
-      <div class="card"><h3>Chat</h3>
-        <div class="setting"><div class="text"><div>Show model reasoning</div><div>Render &lt;think&gt; / reasoning output as a quoted block above the answer.</div></div>
-          <label class="switch"><input type="checkbox" data-setting="showReasoning" ${s.showReasoning ? "checked" : ""} aria-label="Show model reasoning"><span></span></label></div>
-      </div>
-      <div class="card"><h3>VS Code Native Endpoints (chatLanguageModels.json)</h3><div class="desc">Append providers and models directly to VS Code's native <code>chatLanguageModels.json</code> configuration. This connects them natively as Custom Endpoints in Copilot, showing native thinking accordions and connecting directly.</div>
-        <div class="setting"><div class="text"><div>Append models to chatLanguageModels.json</div><div>Export your configured providers and selected models into VS Code's user configuration.</div></div>
-          <button class="btn" data-action="append-chat-lm">${icon("file-code")}Append models</button><button class="btn" data-action="open-chat-lm">${icon("go-to-file")}Open file</button></div>
-        <div class="setting"><div class="text"><div>Auto-sync to chatLanguageModels.json</div><div>Keep <code>chatLanguageModels.json</code> automatically updated when models or providers change.</div></div>
-          <label class="switch"><input type="checkbox" data-setting="autoSyncChatLanguageModels" ${s.autoSyncChatLanguageModels ? "checked" : ""} aria-label="Auto-sync to chatLanguageModels.json"><span></span></label></div>
-        <div class="setting"><div class="text"><div>Expose via extension Chat Provider</div><div>Uncheck if you use <code>chatLanguageModels.json</code> and want to avoid duplicate models in Copilot's dropdown.</div></div>
-          <label class="switch"><input type="checkbox" data-setting="registerChatProvider" ${s.registerChatProvider ? "checked" : ""} aria-label="Expose via extension Chat Provider"><span></span></label></div>
-      </div>
-      <div class="card"><h3>Usage & Budget</h3>
-        <div class="setting"><div class="text"><div>Speed and spend statistics</div><div>Measured from your own chats and kept on this machine${S.spend > 0 ? ` — about ${money(S.spend)} so far` : ""}.</div></div>
-          <button class="btn" data-action="reset-stats">${icon("discard")}Reset</button><button class="btn" data-action="export-stats">${icon("graph")}Export stats</button></div>
-        <div class="setting"><div class="text"><div>Monthly budget warning ($)</div><div>Show a warning banner when estimated spend reaches this threshold (0 to disable).</div></div>
-          <input type="number" min="0" step="1" data-setting="budgetLimitUsd" value="${esc(s.budgetLimitUsd || "")}" placeholder="0 (disabled)" aria-label="Budget limit in USD"></div>
-      </div>
-      <div class="card"><h3>Configuration</h3>
-        <div class="setting"><div class="text"><div>Export / import</div><div>Providers, Copilot selection, routes and model overrides as JSON. API keys and secret headers are never exported.</div></div>
-          <button class="btn" data-action="export">${icon("cloud-upload")}Export</button><button class="btn" data-action="import">${icon("cloud-download")}Import</button></div>
-        <div class="setting"><div class="text"><div>Raw settings</div><div>Edit <code>customLlmRouter.*</code> in VS Code settings.</div></div>
-          <button class="btn" data-action="open-settings">${icon("settings")}Open settings</button><button class="btn" data-action="logs">${icon("output")}Logs</button></div>
-      </div>
+            <option value="basic" ${s.toolCheck === "basic" ? "selected" : ""}>Basic</option></select>`) +
+        row("Prune stale cache", "Remove entries for deleted models and results expired past 2× the cache lifetime.",
+          `<button class="btn" data-action="prune-cache">${icon("discard")}Prune stale</button>`))}
+
+      ${section("comment-discussion", "Chat", "",
+        row("Show model reasoning", "Render &lt;think&gt; / reasoning output as a quoted block above the answer.", toggle("showReasoning", s.showReasoning, "Show model reasoning")))}
+
+      ${section("copilot", "Copilot integration", "How models reach the Copilot model picker: through this extension's chat provider, VS Code's native <code>chatLanguageModels.json</code>, or both.",
+        row("Expose via extension chat provider", "Turn off if you use <code>chatLanguageModels.json</code> and want to avoid duplicate entries in the picker.",
+          toggle("registerChatProvider", s.registerChatProvider, "Expose via extension chat provider")) +
+        row("Auto-sync chatLanguageModels.json", "Keep the native file updated when models or providers change.",
+          toggle("autoSyncChatLanguageModels", s.autoSyncChatLanguageModels, "Auto-sync to chatLanguageModels.json")) +
+        row("chatLanguageModels.json", "Append configured providers and selected models as native Custom Endpoints (native thinking UI, direct connection).",
+          `<button class="btn" data-action="append-chat-lm">${icon("file-code")}Append models</button><button class="btn" data-action="open-chat-lm">${icon("go-to-file")}Open file</button>`))}
+
+      ${section("graph", "Usage & budget", "",
+        row("Speed and spend statistics", `Measured from your own chats and kept on this machine${S.spend > 0 ? ` — about ${money(S.spend)} so far` : ""}.`,
+          `<button class="btn" data-action="export-stats">${icon("export")}Export stats</button>`) +
+        row("Budget warning ($)", "Show a warning when the estimated spend reaches this amount (0 disables it).",
+          `<input type="number" min="0" step="1" data-setting="budgetLimitUsd" value="${esc(s.budgetLimitUsd || "")}" placeholder="Off" aria-label="Budget limit in USD">`) +
+        (S.settings.budgetLimitUsd ? `<div class="setting-meter">${budgetMeter()}<span class="muted">${money(S.spend)} of $${S.settings.budgetLimitUsd}</span></div>` : ""))}
+
+      ${section("json", "Configuration", "",
+        row("Export / import", "Providers, Copilot selection, routes and model overrides as JSON. API keys and secret headers are never exported.",
+          `<button class="btn" data-action="export">${icon("cloud-upload")}Export</button><button class="btn" data-action="import">${icon("cloud-download")}Import</button>`) +
+        row("Raw settings", "Edit <code>customLlmRouter.*</code> in VS Code settings, or open the extension log.",
+          `<button class="btn" data-action="open-settings">${icon("settings")}Open settings</button><button class="btn" data-action="logs">${icon("output")}Logs</button>`))}
+
+      ${section("warning", "Danger zone", "These can't be undone.",
+        row("Clear verification results", "Forget every health-check result and start over. Models leave Copilot until they pass again.",
+          `<button class="btn danger" data-action="clear-cache">${icon("trash")}Clear results</button>`) +
+        row("Reset usage statistics", "Delete the recorded speed, failure and spend numbers.",
+          `<button class="btn danger" data-action="reset-stats">${icon("discard")}Reset stats</button>`), "danger-zone")}
     </div>`;
   }
 
@@ -939,6 +1182,21 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       renderHeader();
     },
     refresh: () => post({ type: "refresh" }),
+    "toggle-filters": () => {
+      ui.showFilters = !ui.showFilters;
+      persist();
+      renderModels();
+    },
+    menu: (el) => {
+      ui.menu = ui.menu === el.dataset.menu ? null : el.dataset.menu;
+      renderModels();
+      if (ui.menu) (document.querySelector(".menu:not(.hidden) [role=menuitem]:not(:disabled)") as HTMLElement | null)?.focus();
+    },
+    "hide-checklist": () => {
+      ui.hideChecklist = true;
+      persist();
+      renderOverview();
+    },
     "verify-untested": () => post({ type: "verify" }),
     "cancel-verify": () => post({ type: "cancelVerify" }),
     status: (el) => {
@@ -1078,8 +1336,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     export: () => post({ type: "exportConfig" }),
     "export-stats": () => post({ type: "exportStats" }),
     "scan-local": () => {
-      const btn = document.querySelector('[data-action="scan-local"]');
-      if (btn) btn.innerHTML = `${icon("sync", "spin")} Scanning…`;
+      document.querySelectorAll('[data-action="scan-local"]').forEach((b) => (b.innerHTML = `${icon("sync", "spin")}Scanning…`));
       post({ type: "scanLocalServers" });
     },
     "route-policy": (el) => {
@@ -1094,9 +1351,15 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   };
 
   document.addEventListener("click", (ev) => {
-    const el = (ev.target as HTMLElement)?.closest?.("[data-action]") as HTMLElement | null;
-    if (!el || (el as HTMLButtonElement).disabled || el.tagName === "INPUT" || el.tagName === "SELECT") return;
-    actions[el.dataset.action]?.(el, ev);
+    const target = ev.target as HTMLElement;
+    const el = target?.closest?.("[data-action]") as HTMLElement | null;
+    // Any click outside the open menu's button closes it; picking an item runs it first.
+    const closeMenu = ui.menu && !(el?.dataset.action === "menu");
+    if (el && !(el as HTMLButtonElement).disabled && el.tagName !== "INPUT" && el.tagName !== "SELECT") actions[el.dataset.action]?.(el, ev);
+    if (closeMenu && ui.menu) {
+      ui.menu = null;
+      renderModels();
+    }
   });
 
   document.addEventListener("change", (ev) => {
@@ -1164,6 +1427,10 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     if (ev.key === "/" && ui.tab === "models" && tag !== "INPUT" && tag !== "TEXTAREA") {
       ev.preventDefault();
       $("#q").focus();
+    } else if (ev.key === "Escape" && ui.menu) {
+      ui.menu = null;
+      renderModels();
+      (document.querySelector('[data-action="menu"]') as HTMLElement | null)?.focus();
     } else if (ev.key === "Escape" && ui.editor && tag !== "TEXTAREA") {
       closeEditor();
     } else if (ev.key === "Enter" && tag === "INPUT" && (ev.target as HTMLElement).closest("#limitsRow")) {
@@ -1223,8 +1490,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         if (btn) (btn as HTMLButtonElement).disabled = false;
       }
     } else if (msg.type === "localScanResult") {
-      const btn = document.querySelector('[data-action="scan-local"]');
-      if (btn) btn.innerHTML = `${icon("search")}Scan local`;
+      document.querySelectorAll('[data-action="scan-local"]').forEach((b) => (b.innerHTML = `${icon("search")}Scan local servers`));
       if (!msg.found.length) {
         toast("No local LLM servers detected on standard ports (11434, 1234, 8000, 8080)");
       } else {

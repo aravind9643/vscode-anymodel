@@ -26,7 +26,7 @@ export interface DashboardState {
   settings: DashboardSettings;
 }
 
-export type DashboardTab = "models" | "providers" | "routes" | "settings";
+export type DashboardTab = "overview" | "models" | "providers" | "routes" | "settings";
 
 /** Host → webview. */
 export type HostMessage =

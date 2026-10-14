@@ -26,6 +26,8 @@ const THEMES = {
     "input-border": "#3c3c3c", "dropdown-background": "#313131", "dropdown-foreground": "#cccccc", "dropdown-border": "#3c3c3c",
     "progressBar-background": "#0078d4", "toolbar-hoverBackground": "#5a5d5e50", "toolbar-activeBackground": "#63666750",
     "charts-blue": "#3794ff", "charts-purple": "#b180d7", "charts-orange": "#d18616", "charts-green": "#89d185",
+    "charts-yellow": "#cca700", "charts-red": "#f14c4c", "list-inactiveSelectionBackground": "#37373d", "list-activeSelectionForeground": "#ffffff",
+    "menu-background": "#1f1f1f", "menu-foreground": "#cccccc", "menu-border": "#454545", "menu-selectionBackground": "#0078d4", "menu-selectionForeground": "#ffffff", "menu-separatorBackground": "#454545",
     "notifications-background": "#1f1f1f", "notifications-foreground": "#cccccc", "notifications-border": "#2b2b2b",
     "scrollbarSlider-background": "#79797966", "scrollbarSlider-hoverBackground": "#646464b3", "inputValidation-errorBorder": "#be1100",
   },
@@ -39,6 +41,8 @@ const THEMES = {
     "input-border": "#cecece", "dropdown-background": "#ffffff", "dropdown-foreground": "#3b3b3b", "dropdown-border": "#cecece",
     "progressBar-background": "#005fb8", "toolbar-hoverBackground": "#b8b8b850", "toolbar-activeBackground": "#a6a6a650",
     "charts-blue": "#1a85ff", "charts-purple": "#652d90", "charts-orange": "#d18616", "charts-green": "#388a34",
+    "charts-yellow": "#bf8803", "charts-red": "#e51400", "list-inactiveSelectionBackground": "#e4e6f1", "list-activeSelectionForeground": "#000000",
+    "menu-background": "#ffffff", "menu-foreground": "#3b3b3b", "menu-border": "#cecece", "menu-selectionBackground": "#005fb8", "menu-selectionForeground": "#ffffff", "menu-separatorBackground": "#e5e5e5",
     "notifications-background": "#ffffff", "notifications-foreground": "#3b3b3b", "notifications-border": "#e5e5e5",
     "scrollbarSlider-background": "#64646466", "scrollbarSlider-hoverBackground": "#646464b3", "inputValidation-errorBorder": "#be1100",
   },
@@ -52,6 +56,8 @@ const THEMES = {
     "input-border": "#6fc3df", "dropdown-background": "#000000", "dropdown-foreground": "#ffffff", "dropdown-border": "#6fc3df",
     "progressBar-background": "#6fc3df", "toolbar-hoverBackground": "#00000000", "toolbar-activeBackground": "#00000000",
     "charts-blue": "#3794ff", "charts-purple": "#b180d7", "charts-orange": "#d18616", "charts-green": "#89d185",
+    "charts-yellow": "#ffd370", "charts-red": "#f48771", "list-inactiveSelectionBackground": "#00000000", "list-activeSelectionForeground": "#ffffff",
+    "menu-background": "#000000", "menu-foreground": "#ffffff", "menu-border": "#6fc3df", "menu-selectionBackground": "#000000", "menu-selectionForeground": "#ffffff", "menu-separatorBackground": "#6fc3df",
     "notifications-background": "#000000", "notifications-foreground": "#ffffff", "notifications-border": "#6fc3df",
     "scrollbarSlider-background": "#6fc3df99", "scrollbarSlider-hoverBackground": "#6fc3dfcc", "inputValidation-errorBorder": "#f38518",
   },
@@ -85,7 +91,7 @@ const STATE = {
   discovered: true,
   verifying: { done: 3, total: 5, working: 3, failed: 0 },
   spend: 0.9416,
-  settings: { testConcurrency: 8, providerConcurrency: 3, cacheTtlHours: 48, showReasoning: true, toolCheck: "full" },
+  settings: { testConcurrency: 8, providerConcurrency: 3, cacheTtlHours: 48, showReasoning: true, toolCheck: "full", budgetLimitUsd: 5, registerChatProvider: true, autoSyncChatLanguageModels: false },
 };
 
 function page(theme) {
@@ -111,7 +117,7 @@ function page(theme) {
       p.on("console", (m) => m.type() === "error" && errors.push(m.text()));
       await p.setContent(page(theme));
       await p.evaluate((state) => window.postMessage({ type: "state", state }, "*"), STATE);
-      for (const tab of ["models", "providers", "routes", "settings"]) {
+      for (const tab of ["overview", "models", "providers", "routes", "settings"]) {
         await p.click(`[data-tab="${tab}"]`);
         await p.waitForTimeout(150);
         const file = path.join(OUT, `${theme}-${name}-${tab}.png`);
@@ -128,6 +134,10 @@ function page(theme) {
       await p.click('[data-tab="models"]');
       await p.click('[data-action="edit-limits"]');
       await p.screenshot({ path: path.join(OUT, `${theme}-${name}-limits.png`) });
+      await p.click('[data-action="close-limits"]');
+      await p.click('[data-action="toggle-filters"]');
+      await p.click('[data-action="menu"]');
+      await p.screenshot({ path: path.join(OUT, `${theme}-${name}-menu.png`) });
       if (writeReadme && theme === "dark" && name === "wide") fs.copyFileSync(path.join(OUT, `${theme}-${name}-editor.png`), path.join(README_DIR, "editor.png"));
       // Horizontal overflow is a layout bug at any width.
       const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
@@ -137,7 +147,7 @@ function page(theme) {
     }
   }
   await browser.close();
-  console.log(`wrote ${shots.length + 12} screenshots to ${path.relative(ROOT, OUT)}`);
+  console.log(`wrote ${shots.length + 18} screenshots to ${path.relative(ROOT, OUT)}`);
 })().catch((e) => {
   console.error(e);
   process.exit(1);

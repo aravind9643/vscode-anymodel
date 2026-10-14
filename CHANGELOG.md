@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **Redesigned dashboard.** A navigation rail with live status (providers online, verified models, Copilot count, spend against budget) replaces the top tab bar; on narrow editor panes it collapses to icons.
+- **New Overview page** (the default once a provider exists): KPI tiles, a "Needs attention" list, a dismissible setup checklist, provider health and the current Copilot lineup.
+- **Models**: one toolbar row. Capability filters sit behind a **Filters** toggle (active filters stay visible as removable chips). Bulk actions are grouped, and less frequent actions (Curate top 10, Remove all, Append to `chatLanguageModels.json`) moved into a "⋯" menu. Provider badges no longer stretch to the column width.
+- **Providers**: cards with a status badge, a metrics strip (latency, models, in Copilot, protocol) and grouped actions. The add/edit form groups presets into Local, Cloud, Gateways and Other, and keeps Save/Test in a sticky footer.
+- **Routes and Settings**: clearer route cards with a live/hidden badge; settings grouped into Verification, Chat, Copilot integration, Usage & budget, Configuration and a separate Danger zone.
+
 ## 2.3.0
 
 ### Added

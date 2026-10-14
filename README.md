@@ -6,9 +6,11 @@
 
 Use **local and third-party models in GitHub Copilot Chat**. Custom LLM Router registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
 
-![Models tab of the LLM Router dashboard](media/screenshots/models.png)
+![Overview page of the LLM Router dashboard](media/screenshots/overview.png)
 
 ## Features
+
+- **Dashboard**: an Overview page with provider health, spend against your budget, items that need attention and the current Copilot lineup; plus Models, Providers, Routes and Settings pages. It follows your VS Code theme, including high contrast.
 
 - **Native in Copilot**: the models you pick appear in the Copilot Chat model picker under *Custom LLM Router*.
 - **Three wire protocols**:
@@ -38,6 +40,8 @@ Use **local and third-party models in GitHub Copilot Chat**. Custom LLM Router r
 3. Pick a preset (or *Custom*), enter the API key if needed, then click **Test connection** and **Add provider**.
 4. Click **Verify untested** to health-check the discovered models.
 5. Tick the models you want, or create a **Route**, then select it in the Copilot Chat model picker.
+
+![Models page: pick which verified models appear in Copilot](media/screenshots/models.png)
 
 ### Base URLs
 

@@ -109,6 +109,9 @@ API keys are stored in `context.secrets` under `customLlmRouter.apiKey.<provider
 - `HostMessage` / `WebviewMessage` / `DashboardState` are shared types; change them there and both sides fail to compile until updated.
 - The provider editor, the focused limits row and focused inputs are not re-rendered on `state` pushes (so typing is never lost).
 - Model lists over 200 rows render in a scroll window (fixed 46px rows) — keep row height fixed if you change row markup.
+- Layout: a left nav rail (`.rail`, tabs are `.tab[data-tab]`, status block `#stats`) + page header (`#pageTitle`, global Refresh/Verify) + panels `#panel-<tab>`. Tabs: `overview` (default once a provider exists), `models`, `providers`, `routes`, `settings`. Below 960px the rail collapses to icons.
+- Shared building blocks in `dashboard.ts`: `pill()` status labels, `monogram()` provider avatars (colour hashed from the name), `budgetMeter()`, `menu()` "⋯" popups (`ui.menu`; closed by outside click/Escape), `bannerList()` (used by Models and Overview).
+- Capability chips are always in the DOM; when the Filters toggle is closed, `#chips.collapsed` hides the inactive ones via CSS.
 
 ---
 
@@ -148,11 +151,12 @@ npx @vscode/vsce package --no-dependencies
 
 ## 7. Current State & Handoff
 
-_Last updated: 2026-10-08._
+_Last updated: 2026-10-14._
 
 ### Where things are
 - **Branch `redesign/v2`**: comprehensive resilience, route policies, prompt caching, telemetry export, budget warnings, visual spend progress meter, local server scanning, presets, proxy prefix stripping & model name prettifying, top model curation, filter chips (canonical, 128k+ ctx, <250ms), failed verification breakdown, smart route auto-generation (including Cost Saver and sub-provider diversity), cache auto-pruning, route member search filter, single-model transient retry, sidebar tree filtering, OmniRoute / multi-provider gateway support (sub-provider detection, provider filter dropdown hierarchy, sub-provider badges, and unconfigured upstream diagnostic), and native VS Code `chatLanguageModels.json` export & sync provision (commands to append/open `chatLanguageModels.json`, auto-sync toggle, and `customLlmRouter.registerChatProvider` setting to disable extension LM chat provider and prevent duplicate models in Copilot).
-- **Local verification at handoff**: `npm test` → 26 unit + 7 tree + 16 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
+- **Dashboard redesign (uncommitted on `redesign/v2` at handoff)**: nav rail + Overview page, one-row Models toolbar with Filters toggle and "⋯" menu, new provider cards, grouped presets with sticky editor footer, refreshed Routes/Settings (Danger zone). Protocol change: `DashboardTab` gained `"overview"`. README screenshots refreshed (`overview.png` added).
+- **Local verification at handoff**: `npm test` → 26 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
 - **CI**: green on **ubuntu-latest and windows-latest**.
 
 ### Suggested next steps
