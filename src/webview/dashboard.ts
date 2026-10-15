@@ -93,6 +93,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] || c);
   }
   const icon = (name, cls = "") => `<i class="codicon codicon-${name} ${cls}"></i>`;
+  const ROUTER_ICON = `<svg class="router-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15M4.5 12c5.5 0 8.5-7 15-7M4.5 12c5.5 0 8.5 7 15 7"/><circle cx="4.5" cy="12" r="2.8"/><circle cx="19.5" cy="5" r="2.4"/><circle cx="19.5" cy="12" r="2.4"/><circle cx="19.5" cy="19" r="2.4"/></svg>`;
   const $ = (sel) => (document.querySelector(sel) as HTMLElement);
   const kTokens = (n: number) => (n >= 1000000 ? `${+(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1000)}k`);
   const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -146,7 +147,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
 
   $("#app").innerHTML = `
     <nav class="rail" aria-label="Sections">
-      <div class="brand"><span class="brand-mark">${icon("hubot")}</span><span class="brand-text">LLM Router</span></div>
+      <div class="brand"><span class="brand-mark">${ROUTER_ICON}</span><span class="brand-text">LLM Router</span></div>
       <div class="nav" role="tablist" aria-orientation="vertical">
         ${TABS.map((t) => `<button class="tab" role="tab" data-action="tab" data-tab="${t.id}" title="${t.label}">${icon(t.icon)}<span class="tab-label">${t.label}</span>${
           t.id === "overview" || t.id === "settings" ? "" : `<span class="count" id="count-${t.id}">0</span>`
@@ -379,7 +380,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   /** First-run screen shared by the Overview and Providers pages. */
   function welcome() {
     return `<div class="hero">
-      <span class="hero-mark">${icon("hubot")}</span>
+      <span class="hero-mark">${ROUTER_ICON}</span>
       <h2>Bring your own models to Copilot Chat</h2>
       <p>Connect a local server or a cloud API. The router checks every model and only shows the ones that work in the Copilot model picker.</p>
       <div class="hero-actions">

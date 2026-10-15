@@ -60,6 +60,7 @@ kbd {
   background: var(--brand); color: var(--vscode-button-foreground, #fff);
 }
 .brand-mark .codicon { font-size: 16px; }
+.brand-mark svg { width: 18px; height: 18px; display: block; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .tab, .rail-link {
   display: flex; align-items: center; gap: 10px; width: 100%; height: 32px; padding: 0 10px; border-radius: var(--radius);
@@ -454,6 +455,7 @@ tr.spacer:hover { background: none; }
   background: var(--brand); color: var(--vscode-button-foreground, #fff);
 }
 .hero-mark .codicon { font-size: 28px; }
+.hero-mark svg { width: 32px; height: 32px; display: block; }
 .hero h2 { font-size: 20px; font-weight: 600; margin: 14px 0 6px; }
 .hero p { color: var(--muted); max-width: 560px; margin: 0 auto 18px; }
 .hero-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }

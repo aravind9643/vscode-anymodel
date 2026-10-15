@@ -488,8 +488,8 @@ function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine) {
   const progress = engine.verifyProgress;
 
   if (progress) item.text = `$(sync~spin) ${progress.done}/${progress.total}`;
-  else if (!statuses.length) item.text = "$(hubot) LLM Router";
-  else item.text = `$(hubot) ${active}${offline.length ? " $(warning)" : ""}`;
+  else if (!statuses.length) item.text = "$(split-horizontal) LLM Router";
+  else item.text = `$(split-horizontal) ${active}${offline.length ? " $(warning)" : ""}`;
 
   item.backgroundColor = statuses.length && offline.length === statuses.length ? new vscode.ThemeColor("statusBarItem.warningBackground") : undefined;
 
