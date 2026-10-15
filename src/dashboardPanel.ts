@@ -28,7 +28,7 @@ export class DashboardPanel implements vscode.Disposable {
       if (focus) DashboardPanel._current._focus(focus);
       return;
     }
-    const panel = vscode.window.createWebviewPanel("customLlmRouterDashboard", "LLM Router", vscode.ViewColumn.Active, {
+    const panel = vscode.window.createWebviewPanel("customLlmRouterDashboard", "AnyModel", vscode.ViewColumn.Active, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
@@ -249,7 +249,7 @@ export class DashboardPanel implements vscode.Disposable {
   }
 
   private _error(err: any) {
-    void vscode.window.showErrorMessage(`LLM Router: ${err?.message || err}`);
+    void vscode.window.showErrorMessage(`AnyModel: ${err?.message || err}`);
   }
 
   private _html(): string {
@@ -271,7 +271,7 @@ export class DashboardPanel implements vscode.Disposable {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="${media("codicon.css")}">
   <link rel="stylesheet" href="${media("dashboard.css")}">
-  <title>LLM Router</title>
+  <title>AnyModel</title>
 </head>
 <body>
   <div id="app"></div>

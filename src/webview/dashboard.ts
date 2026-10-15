@@ -147,7 +147,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
 
   $("#app").innerHTML = `
     <nav class="rail" aria-label="Sections">
-      <div class="brand"><span class="brand-mark">${ROUTER_ICON}</span><span class="brand-text">LLM Router</span></div>
+      <div class="brand"><span class="brand-mark">${ROUTER_ICON}</span><span class="brand-text">AnyModel</span></div>
       <div class="nav" role="tablist" aria-orientation="vertical">
         ${TABS.map((t) => `<button class="tab" role="tab" data-action="tab" data-tab="${t.id}" title="${t.label}">${icon(t.icon)}<span class="tab-label">${t.label}</span>${
           t.id === "overview" || t.id === "settings" ? "" : `<span class="count" id="count-${t.id}">0</span>`

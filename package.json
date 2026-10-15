@@ -20,7 +20,8 @@
     "deepseek",
     "groq",
     "gemini",
-    "llm-router"
+    "llm-router",
+    "anymodel"
   ],
   "repository": {
     "type": "git",

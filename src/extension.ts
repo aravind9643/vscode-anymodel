@@ -14,14 +14,14 @@ const CMD = "vscode-custom-llm-router";
 const REMOTE_CONFIRM_THRESHOLD = 20;
 
 export async function activate(context: vscode.ExtensionContext) {
-  const log = vscode.window.createOutputChannel("LLM Router", { log: true });
+  const log = vscode.window.createOutputChannel("AnyModel", { log: true });
   const store = new ProviderStore(context.secrets);
   await store.init();
   const engine = new ModelEngine(context.globalState, store, log);
   const chatProvider = new CustomLLMChatProvider(engine, log);
   const tree = new RouterTreeProvider(engine);
   const statusBar = vscode.window.createStatusBarItem("llmRouter.status", vscode.StatusBarAlignment.Right, 100);
-  statusBar.name = "LLM Router";
+  statusBar.name = "AnyModel";
   statusBar.command = `${CMD}.showMenu`;
   statusBar.show();
 
@@ -126,7 +126,7 @@ export async function activate(context: vscode.ExtensionContext) {
           estimate.requests,
           estimate.remote.map((r) => `${r.name} (${r.models})`).join(", ")
         ),
-        { modal: true, detail: vscode.l10n.t("Tip: set “LLM Router › Tool Check” to “basic” to halve the number of requests.") },
+        { modal: true, detail: vscode.l10n.t("Tip: set “AnyModel › Tool Check” to “basic” to halve the number of requests.") },
         ...(chosen.length ? [onlyChosen, all] : [all])
       );
       if (!pick) return;
@@ -262,9 +262,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   register("exportConfig", async () => {
     const uri = await vscode.window.showSaveDialog({
-      defaultUri: vscode.Uri.file("llm-router-config.json"),
+      defaultUri: vscode.Uri.file("anymodel-config.json"),
       filters: { JSON: ["json"] },
-      title: vscode.l10n.t("Export LLM Router configuration (API keys are not included)"),
+      title: vscode.l10n.t("Export AnyModel configuration (API keys are not included)"),
     });
     if (!uri) return;
     const payload = {
@@ -285,9 +285,9 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const uri = await vscode.window.showSaveDialog({
-      defaultUri: vscode.Uri.file("llm-router-stats.csv"),
+      defaultUri: vscode.Uri.file("anymodel-stats.csv"),
       filters: { "CSV (Comma delimited)": ["csv"], JSON: ["json"] },
-      title: vscode.l10n.t("Export LLM Router usage and spend statistics"),
+      title: vscode.l10n.t("Export AnyModel usage and spend statistics"),
     });
     if (!uri) return;
     const isJson = uri.path.endsWith(".json");
@@ -318,7 +318,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   register("importConfig", async () => {
-    const [uri] = (await vscode.window.showOpenDialog({ canSelectMany: false, filters: { JSON: ["json"] }, title: vscode.l10n.t("Import LLM Router configuration") })) || [];
+    const [uri] = (await vscode.window.showOpenDialog({ canSelectMany: false, filters: { JSON: ["json"] }, title: vscode.l10n.t("Import AnyModel configuration") })) || [];
     if (!uri) return;
     let parsed: any;
     try {
@@ -432,7 +432,7 @@ export async function activate(context: vscode.ExtensionContext) {
       { label: `$(output) ${vscode.l10n.t("Show Logs")}`, run: () => log.show() },
     ];
     if (engine.isVerifying) items.splice(1, 0, { label: `$(debug-stop) ${vscode.l10n.t("Cancel Verification")}`, run: () => engine.cancelVerification() });
-    const pick = await vscode.window.showQuickPick(items, { placeHolder: "LLM Router" });
+    const pick = await vscode.window.showQuickPick(items, { placeHolder: "AnyModel" });
     await pick?.run?.();
   });
 
@@ -473,7 +473,7 @@ function checkProxyConfiguration(log: vscode.LogOutputChannel) {
   if (http.get<boolean>("fetchAdditionalSupport") === false) {
     log.warn("[network] A proxy is configured but http.fetchAdditionalSupport is off, so model requests bypass the proxy.");
     const open = vscode.l10n.t("Open Setting");
-    void vscode.window.showWarningMessage(vscode.l10n.t("LLM Router: a proxy is configured, but “http.fetchAdditionalSupport” is off, so model requests will not use it."), open).then((pick) => {
+    void vscode.window.showWarningMessage(vscode.l10n.t("AnyModel: a proxy is configured, but “http.fetchAdditionalSupport” is off, so model requests will not use it."), open).then((pick) => {
       if (pick) void vscode.commands.executeCommand("workbench.action.openSettings", "http.fetchAdditionalSupport");
     });
   } else {
@@ -488,7 +488,7 @@ function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine) {
   const progress = engine.verifyProgress;
 
   if (progress) item.text = `$(sync~spin) ${progress.done}/${progress.total}`;
-  else if (!statuses.length) item.text = "$(split-horizontal) LLM Router";
+  else if (!statuses.length) item.text = "$(split-horizontal) AnyModel";
   else item.text = `$(split-horizontal) ${active}${offline.length ? " $(warning)" : ""}`;
 
   item.backgroundColor = statuses.length && offline.length === statuses.length ? new vscode.ThemeColor("statusBarItem.warningBackground") : undefined;
@@ -498,7 +498,7 @@ function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine) {
   if (!statuses.length) {
     md.appendMarkdown(`${vscode.l10n.t("No providers configured.")}\n\n[$(add) ${vscode.l10n.t("Add a provider")}](command:${CMD}.addProvider)`);
   } else {
-    md.appendMarkdown(`**LLM Router** — ${vscode.l10n.t("{0} model(s) in Copilot", active)}\n\n`);
+    md.appendMarkdown(`**AnyModel** — ${vscode.l10n.t("{0} model(s) in Copilot", active)}\n\n`);
     for (const s of statuses) {
       const icon = s.online === undefined ? "$(loading~spin)" : s.online ? "$(pass-filled)" : "$(error)";
       md.appendMarkdown(`${icon} ${s.name} — ${s.online === false ? s.error || "offline" : vscode.l10n.t("{0} models", s.modelCount)}  \n`);

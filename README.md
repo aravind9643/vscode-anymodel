@@ -1,18 +1,18 @@
-# Custom LLM Router for VS Code
+# AnyModel — Custom LLMs in Copilot Chat
 
 [![CI](https://github.com/AravindMerugu/vscode-custom-llm-router/actions/workflows/ci.yml/badge.svg)](https://github.com/AravindMerugu/vscode-custom-llm-router/actions/workflows/ci.yml)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A51.140-blue.svg)](https://code.visualstudio.com/)
 [![Language Model Provider](https://img.shields.io/badge/API-vscode.lm-blue.svg)](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
 
-Use **local and third-party models in GitHub Copilot Chat**. Custom LLM Router registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
+Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
 
-![Overview page of the LLM Router dashboard](media/screenshots/overview.png)
+![Overview page of the AnyModel dashboard](media/screenshots/overview.png)
 
 ## Features
 
 - **Dashboard**: an Overview page with provider health, spend against your budget, items that need attention and the current Copilot lineup; plus Models, Providers, Routes and Settings pages. It follows your VS Code theme, including high contrast.
 
-- **Native in Copilot**: the models you pick appear in the Copilot Chat model picker under *Custom LLM Router*.
+- **Native in Copilot**: the models you pick appear in the Copilot Chat model picker under *AnyModel*.
 - **Three wire protocols**:
   - **OpenAI-compatible**: most servers.
   - **Ollama native** (`/api/chat`): sends the context length (`num_ctx`) so long chats aren't cut short, plus keep-alive and native thinking.
@@ -36,7 +36,7 @@ Use **local and third-party models in GitHub Copilot Chat**. Custom LLM Router r
    ```bash
    code --install-extension vscode-custom-llm-router-2.2.0.vsix --force
    ```
-2. Open the **LLM Router** view in the Activity Bar and click **Add Provider**.
+2. Open the **AnyModel** view in the Activity Bar and click **Add Provider**.
 3. Pick a preset (or *Custom*), enter the API key if needed, then click **Test connection** and **Add provider**.
 4. Click **Verify untested** to health-check the discovered models.
 5. Tick the models you want, or create a **Route**, then select it in the Copilot Chat model picker.

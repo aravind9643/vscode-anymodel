@@ -115,7 +115,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
     const estTokens = isRoute ? Math.ceil(countRequestChars(messages) / 4) : undefined;
     let targets = this._targets(info, estTokens);
     if (!targets.length) {
-      throw new RouterError(`"${info.name}" has no available models. Refresh models in the LLM Router dashboard.`);
+      throw new RouterError(`"${info.name}" has no available models. Refresh models in the AnyModel dashboard.`);
     }
     if (isRoute && options.tools?.length) {
       // Agent mode needs tools: prefer members that can call them.

@@ -16,7 +16,7 @@ async function waitFor(fn, what, timeoutMs = 20000) {
   }
 }
 
-suite("LLM Router in VS Code", function () {
+suite("AnyModel in VS Code", function () {
   let mock;
   const cfg = () => vscode.workspace.getConfiguration("customLlmRouter");
 
@@ -104,7 +104,7 @@ suite("LLM Router in VS Code", function () {
   test("dashboard opens as an editor tab and the sidebar view can be focused", async () => {
     await vscode.commands.executeCommand(`${CMD}.openDashboard`);
     await waitFor(
-      () => vscode.window.tabGroups.all.flatMap((g) => g.tabs).some((t) => t.label === "LLM Router"),
+      () => vscode.window.tabGroups.all.flatMap((g) => g.tabs).some((t) => t.label === "AnyModel" || t.label === "LLM Router"),
       "the dashboard tab"
     );
     await vscode.commands.executeCommand("llmRouter.providers.focus");
