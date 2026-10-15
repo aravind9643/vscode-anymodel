@@ -172,7 +172,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <section class="panel" id="panel-models">
           <div class="toolbar">
             <div class="row">
-              <div class="search">${icon("search")}<input type="search" id="q" placeholder="Search models" aria-label="Search models"><kbd>/</kbd></div>
+              <div class="search">${icon("search")}<input type="search" id="q" placeholder="Search models or @tools, @vision…" aria-label="Search models"><kbd>/</kbd></div>
               <select id="provSel" aria-label="Filter by provider"></select>
               <div class="segmented" id="statusSeg" role="group" aria-label="Filter by status"></div>
               <button class="btn ghost" data-action="toggle-filters" id="filtersBtn" aria-controls="chips"></button>
@@ -395,8 +395,27 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
   // ------------------------------------------------------------- models
 
   function matchesBase(m, ignoreStatus) {
-    const q = ui.q.trim().toLowerCase();
-    if (q && !`${m.name} ${m.id} ${m.providerName} ${m.subProvider || ""}`.toLowerCase().includes(q)) return false;
+    const rawQ = ui.q.trim().toLowerCase();
+    if (rawQ) {
+      const tokens = rawQ.split(/\s+/);
+      for (const token of tokens) {
+        if (token === "@tools") { if (!m.caps.tools) return false; }
+        else if (token === "@vision") { if (!m.caps.vision) return false; }
+        else if (token === "@reasoning") { if (!m.caps.reasoning) return false; }
+        else if (token === "@coding") { if (!m.caps.coding) return false; }
+        else if (token === "@fast") { if (m.status !== "working" || m.latencyMs >= 1000) return false; }
+        else if (token === "@copilot") { if (!m.selected) return false; }
+        else if (token === "@failed") { if (m.status !== "failed") return false; }
+        else if (token === "@untested") { if (m.status !== "untested" && m.status !== "testing") return false; }
+        else if (token === "@working") { if (m.status !== "working") return false; }
+        else if (token.startsWith("@")) {
+          const tag = token.slice(1);
+          if (!m.providerName.toLowerCase().includes(tag) && !(m.subProvider || "").toLowerCase().includes(tag)) return false;
+        } else {
+          if (!`${m.name} ${m.id} ${m.providerName} ${m.subProvider || ""}`.toLowerCase().includes(token)) return false;
+        }
+      }
+    }
     if (ui.provider) {
       if (ui.provider.includes("::")) {
         const [pName, sName] = ui.provider.split("::");
@@ -673,7 +692,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         m.subProvider && m.subProvider.toLowerCase() !== m.providerName.toLowerCase()
           ? `<span class="model-prefix">[${esc(m.subProvider)}]</span> `
           : ""
-      }${esc(m.name)}</div><div class="model-id" title="${esc(m.id)}">${esc(m.id)}</div></td>
+      }${esc(m.name)}</div><div class="model-id" title="${esc(m.id)}">${esc(m.id)}<button class="copy-id-btn" data-action="copy-id" data-id="${esc(m.id)}" title="Copy model ID">${icon("copy")}</button></div></td>
       <td class="col-provider"><div class="prov-cell">${
         m.subProvider && m.subProvider.toLowerCase() !== m.providerName.toLowerCase()
           ? `<span class="tag sub-prov" title="${esc(m.providerName)} / ${esc(m.subProvider)}">${esc(m.subProvider)}</span><span class="prov-via" title="via ${esc(m.providerName)}">via ${esc(m.providerName)}</span>`
@@ -1238,6 +1257,18 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     "clear-failed": () => post({ type: "clearFailed" }),
     "auto-routes": () => post({ type: "autoRoutes" }),
     "add-all-working": () => setSelected(S.models.filter((m) => m.status === "working" && !m.selected).map((m) => m.key), true),
+    "copy-id": (el) => {
+      const id = el.dataset.id;
+      if (!id) return;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(id).then(
+          () => toast(`Copied ID “${id}”`),
+          () => toast("Failed to copy", "err")
+        );
+      } else {
+        toast(`Copied ID “${id}”`);
+      }
+    },
     ping: (el) => post({ type: "verify", keys: [el.dataset.key], force: true }),
     "edit-limits": (el) => openLimits(ui.limitsFor === el.dataset.key ? null : el.dataset.key),
     "close-limits": () => openLimits(null),

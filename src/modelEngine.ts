@@ -44,9 +44,9 @@ const EXCLUDE_PATTERNS = [
 ];
 const ALWAYS_INCLUDE = new Set(["auto"]);
 
-const CODING_RE = /(coder|coding|code|codestral|devstral|starcoder|codellama|claude|gpt-4|gpt-5|deepseek|qwen|kimi|glm)/;
-const REASONING_RE = /(reason|thinking|think|deepseek-r1|(^|[\/\-_:])r1([\-_:.]|$)|(^|[\/\-_:])o[134](-|$)|qwq|magistral)/;
-const VISION_RE = /(vision|(^|[\-_:])vl([\-_:]|$)|gpt-4o|gpt-4\.1|gpt-5|gemini|claude-3|claude-(sonnet|opus)|llava|pixtral|gemma-?3)/;
+const CODING_RE = /(coder|coding|code|codestral|devstral|starcoder|codellama|claude|gpt-4|gpt-5|deepseek|qwen|kimi|glm|phi-4|magicoder)/i;
+const REASONING_RE = /(reason|thinking|think|deepseek-r1|(^|[\/\-_:])r1([\-_:.]|$)|(^|[\/\-_:])o[134](-|$)|qwq|magistral|marco-o1|skywork-o1)/i;
+const VISION_RE = /(vision|(^|[\-_:])vl([\-_:]|$)|gpt-4o|gpt-4\.1|gpt-5|gemini|claude-3|claude-(sonnet|opus)|llava|pixtral|minicpm-v|llama-3\.2.*vision|gemma-?3)/i;
 
 /** Limits and capabilities reported by a server's native API (Ollama / LM Studio). */
 interface NativeMeta {

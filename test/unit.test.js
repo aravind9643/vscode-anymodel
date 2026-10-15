@@ -475,6 +475,16 @@ const token = () => new vscode.CancellationTokenSource().token;
       const infoRestored = await chat.provideLanguageModelChatInformation({}, token());
       assert.ok(infoRestored.length > 0);
     }],
+
+    ["provideLanguageModelChatInformation includes enriched detail and family", async () => {
+      await select("Mock::mock-coder-32b");
+      const list = await chat.provideLanguageModelChatInformation({}, token());
+      const item = list.find((x) => x.id.includes("mock-coder-32b"));
+      assert.ok(item, "Found mock-coder-32b");
+      assert.ok(item.detail.includes("ctx"), "Detail includes context length");
+      assert.ok(item.tooltip.includes("context"), "Tooltip includes context details");
+      assert.strictEqual(item.family, "mock-server");
+    }],
   ]);
 
   engine.dispose();

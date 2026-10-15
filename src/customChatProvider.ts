@@ -65,12 +65,16 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       const label = sub || (this._engine.store.getProviders().length > 1 ? m.providerName : undefined);
       const name = label && !m.name.toLowerCase().startsWith(`[${label.toLowerCase()}]`) ? `[${label}] ${m.name}` : m.name;
       const ctxFmt = m.contextWindow >= 1_000_000 ? `${+(m.contextWindow / 1e6).toFixed(1)}M` : `${Math.round(m.contextWindow / 1000)}k`;
+      const speed = m.stats?.tokensPerSec ? `${Math.round(m.stats.tokensPerSec)} tok/s` : m.latencyMs ? `${m.latencyMs}ms` : "";
+      const detail = [sub ? `${m.providerName} (${sub})` : m.providerName, `${ctxFmt} ctx`, speed].filter(Boolean).join(" · ");
+      const speedNote = m.stats?.tokensPerSec ? ` · ${m.stats.tokensPerSec.toFixed(1)} tokens/sec` : "";
+      const priceNote = m.pricing ? ` · $${m.pricing.inputPerM}/$${m.pricing.outputPerM} per 1M` : "";
       return {
         id,
         name,
         family: modelFamily(m),
-        detail: sub ? `${m.providerName} · ${sub}` : m.providerName,
-        tooltip: `${m.id} via ${m.providerName}${sub ? ` (${sub})` : ""} · ${ctxFmt} context${m.latencyMs ? ` · ${m.latencyMs}ms` : ""}`,
+        detail,
+        tooltip: `${m.id} via ${m.providerName}${sub ? ` (${sub})` : ""} · ${ctxFmt} context${m.latencyMs ? ` · ${m.latencyMs}ms` : ""}${speedNote}${priceNote}`,
         version: "1.0.0",
         maxInputTokens: m.maxInputTokens,
         maxOutputTokens: m.maxOutputTokens,
@@ -127,6 +131,12 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       // Agent mode needs tools: prefer members that can call them.
       const withTools = targets.filter((m) => m.caps.tools);
       if (withTools.length) targets = withTools;
+    }
+    const hasImages = messages.some((msg) => msg.content.some((part) => part instanceof vscode.LanguageModelDataPart && part.mimeType.startsWith("image/")));
+    if (isRoute && hasImages) {
+      // Vision requested: prefer members that can process images.
+      const withVision = targets.filter((m) => m.caps.vision);
+      if (withVision.length) targets = withVision;
     }
 
     const failures: string[] = [];
@@ -487,11 +497,17 @@ function registrationId(m: CatalogModel) {
 function modelFamily(m: CatalogModel): string {
   const l = m.id.toLowerCase();
   if (l.includes("claude")) return "claude";
-  if (l.includes("gpt-4") || l.includes("o1") || l.includes("o3") || l.includes("o4")) return "gpt-4";
+  if (l.includes("gpt-4") || l.includes("gpt-5") || l.includes("o1") || l.includes("o3") || l.includes("o4")) return "gpt-4";
   if (l.includes("deepseek")) return "deepseek";
   if (l.includes("gemini")) return "gemini";
   if (l.includes("qwen")) return "qwen";
   if (l.includes("llama")) return "llama";
-  if (l.includes("mistral") || l.includes("codestral")) return "mistral";
+  if (l.includes("phi")) return "phi";
+  if (l.includes("gemma")) return "gemma";
+  if (l.includes("mistral") || l.includes("codestral") || l.includes("devstral")) return "mistral";
+  if (l.includes("starcoder")) return "starcoder";
+  if (l.includes("cohere") || l.includes("command")) return "cohere";
+  if (l.includes("dbrx")) return "dbrx";
+  if (l.includes("yi-")) return "yi";
   return slug(m.subProvider || m.providerName);
 }

@@ -8,6 +8,11 @@ import { Auth, ChatRequest, ChatResult, ChatSink, HttpError, ListResult, Transpo
  * Anthropic's Models API does not return prices; users can correct these per model with an override.
  */
 const LIST_PRICES: Record<string, [number, number]> = {
+  "claude-3-7-sonnet": [3, 15],
+  "claude-3-5-sonnet": [3, 15],
+  "claude-3-5-haiku": [0.8, 4],
+  "claude-3-opus": [15, 75],
+  "claude-3-haiku": [0.25, 1.25],
   "claude-fable-5-1": [10, 50],
   "claude-fable-5": [10, 50],
   "claude-opus-5-5": [4, 20],
