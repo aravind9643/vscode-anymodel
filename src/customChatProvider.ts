@@ -63,13 +63,14 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       this._routes.set(id, m.key);
       const sub = m.subProvider && m.subProvider.toLowerCase() !== m.providerName.toLowerCase() ? m.subProvider : undefined;
       const label = sub || (this._engine.store.getProviders().length > 1 ? m.providerName : undefined);
-      const name = label ? `[${label}] ${m.name}` : m.name;
+      const name = label && !m.name.toLowerCase().startsWith(`[${label.toLowerCase()}]`) ? `[${label}] ${m.name}` : m.name;
+      const ctxFmt = m.contextWindow >= 1_000_000 ? `${+(m.contextWindow / 1e6).toFixed(1)}M` : `${Math.round(m.contextWindow / 1000)}k`;
       return {
         id,
         name,
-        family: slug(m.providerName),
+        family: modelFamily(m),
         detail: sub ? `${m.providerName} · ${sub}` : m.providerName,
-        tooltip: `${m.id} via ${m.providerName}${sub ? ` (${sub})` : ""} · ${Math.round(m.contextWindow / 1000)}k context${m.latencyMs ? ` · ${m.latencyMs}ms` : ""}`,
+        tooltip: `${m.id} via ${m.providerName}${sub ? ` (${sub})` : ""} · ${ctxFmt} context${m.latencyMs ? ` · ${m.latencyMs}ms` : ""}`,
         version: "1.0.0",
         maxInputTokens: m.maxInputTokens,
         maxOutputTokens: m.maxOutputTokens,
@@ -83,7 +84,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       infos.push({
         id: ROUTE_PREFIX + r.slug,
         name: r.name,
-        family: "llm-router-route",
+        family: "route",
         detail: `Route · ${members.length} model${members.length === 1 ? "" : "s"}`,
         tooltip: `Tries in order: ${members.map((m) => `${m.name} (${m.providerName})`).join(" → ")}`,
         version: "1.0.0",
@@ -98,9 +99,10 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
 
   /** Returns the models to try for a registration id: one for a model, the ordered members for a route. */
   private _targets(info: vscode.LanguageModelChatInformation, requiredTokens?: number): CatalogModel[] {
-    if (info.id.startsWith(ROUTE_PREFIX)) return this._engine.routeCandidates(info.id.slice(ROUTE_PREFIX.length), requiredTokens);
-    const key = this._routes.get(info.id);
-    const m = key ? this._engine.getModel(key) : this._engine.getModels().find((x) => registrationId(x) === info.id);
+    const rawId = info.id.replace(/^(custom-llm-router|llm-router)\//, "");
+    if (rawId.startsWith(ROUTE_PREFIX)) return this._engine.routeCandidates(rawId.slice(ROUTE_PREFIX.length), requiredTokens);
+    const key = this._routes.get(info.id) || this._routes.get(rawId);
+    const m = key ? this._engine.getModel(key) : this._engine.getModels().find((x) => registrationId(x) === info.id || registrationId(x) === rawId);
     return m ? [m] : [];
   }
 
@@ -114,6 +116,10 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
     const isRoute = info.id.startsWith(ROUTE_PREFIX);
     const estTokens = isRoute ? Math.ceil(countRequestChars(messages) / 4) : undefined;
     let targets = this._targets(info, estTokens);
+    if (!targets.length) {
+      await this._engine.ensureDiscovered();
+      targets = this._targets(info, estTokens);
+    }
     if (!targets.length) {
       throw new RouterError(`"${info.name}" has no available models. Refresh models in the AnyModel dashboard.`);
     }
@@ -277,6 +283,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
   ): Promise<number> {
     const target = this._targets(info)[0];
     const ratio = target ? this._engine.charsPerToken(target.key) : 4;
+    if (typeof text === "string" && text.length === 0) return 0;
     const chars = typeof text === "string" ? text.length : countMessageChars(text);
     return Math.max(1, Math.ceil(chars / ratio));
   }
@@ -475,4 +482,16 @@ export class ThinkTagSplitter {
 
 function registrationId(m: CatalogModel) {
   return `${slug(m.providerName)}/${m.id}`;
+}
+
+function modelFamily(m: CatalogModel): string {
+  const l = m.id.toLowerCase();
+  if (l.includes("claude")) return "claude";
+  if (l.includes("gpt-4") || l.includes("o1") || l.includes("o3") || l.includes("o4")) return "gpt-4";
+  if (l.includes("deepseek")) return "deepseek";
+  if (l.includes("gemini")) return "gemini";
+  if (l.includes("qwen")) return "qwen";
+  if (l.includes("llama")) return "llama";
+  if (l.includes("mistral") || l.includes("codestral")) return "mistral";
+  return slug(m.subProvider || m.providerName);
 }
