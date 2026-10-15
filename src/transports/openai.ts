@@ -1,6 +1,5 @@
-import { ProviderConfig } from "../types";
 import { buildHeaders, describeFetchError, resolveChatUrl, resolveModelsUrl, summarizeErrorBody } from "../endpoints";
-import { Auth, ChatRequest, ChatResult, ChatSink, HttpError, ListResult, ListedModel, Transport } from "./types";
+import { ChatResult, ChatSink, HttpError, ListResult, ListedModel, Transport } from "./types";
 
 /** Providers that rejected `stream_options` once; usage is not requested from them again. */
 const noStreamOptions = new Set<string>();

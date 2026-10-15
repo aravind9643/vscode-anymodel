@@ -1,7 +1,7 @@
 /* LLM Router dashboard — bundled by esbuild into media/dashboard.js and loaded by DashboardPanel
    under a strict nonce CSP. Rule: every dynamic value is rendered through esc(); no inline event handlers. */
 import type { DashboardState, HostMessage, WebviewMessage } from "../protocol";
-import type { CatalogModel, StaticModelConfig } from "../types";
+import type { StaticModelConfig } from "../types";
 import type { DashboardSettings } from "../protocol";
 
 declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; getState(): any; setState(state: unknown): void };

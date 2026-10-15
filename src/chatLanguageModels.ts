@@ -1,10 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { ModelEngine, slug } from "./modelEngine";
+import { ModelEngine } from "./modelEngine";
 import { ProviderStore } from "./providerStore";
 import { resolveChatUrl, resolveAnthropicChatUrl, resolveApi } from "./endpoints";
-import { ProviderConfig } from "./types";
 
 export interface ChatLMModelEntry {
   id: string;

@@ -21,6 +21,7 @@ unregister-task.ps1
 install.ps1
 AGENTS.md
 GEMINI.md
+CLAUDE.md
 .agents/**
 mock_llm_server.py
 __pycache__/**

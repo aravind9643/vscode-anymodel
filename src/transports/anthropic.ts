@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { ProviderConfig } from "../types";
 import { describeFetchError, normalizeBaseUrl } from "../endpoints";
-import { Auth, ChatRequest, ChatResult, ChatSink, HttpError, ListResult, Transport, WireMessage, WirePart } from "./types";
+import { Auth, ChatResult, HttpError, ListResult, Transport, WireMessage, WirePart } from "./types";
 
 /**
  * List prices (USD per million tokens) for current Claude models, used for spend estimates.
