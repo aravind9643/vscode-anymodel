@@ -23,7 +23,7 @@
   "command.pullOllamaModel": "Pull Ollama Model…",
   "view.container": "AnyModel",
   "view.providers": "Providers",
-  "view.welcome": "Use local or third-party models in Copilot Chat. Connect Ollama, LM Studio, OpenRouter or any OpenAI-compatible endpoint.\n[Add Provider](command:vscode-custom-llm-router.addProvider)\n[Open Dashboard](command:vscode-custom-llm-router.openDashboard)",
+  "view.welcome": "Use local or third-party models in Copilot Chat. Connect Ollama, LM Studio, OpenRouter or any OpenAI-compatible endpoint.\n[Add Provider](command:vscode-anymodel.addProvider)\n[Open Dashboard](command:vscode-anymodel.openDashboard)",
   "config.title": "AnyModel",
   "config.providers": "OpenAI-compatible model providers. Easier to manage from the **AnyModel** sidebar or dashboard. API keys entered there are kept in VS Code secret storage, not here.",
   "config.copilotModels": "Models shown in the Copilot model picker, as `Provider::modelId`. A model appears only after it passes verification.",

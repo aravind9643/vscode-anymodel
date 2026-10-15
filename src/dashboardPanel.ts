@@ -114,7 +114,7 @@ export class DashboardPanel implements vscode.Disposable {
         await this._engine.refresh();
         break;
       case "verify":
-        void vscode.commands.executeCommand("vscode-custom-llm-router.testAllModels", { keys: msg.keys, force: !!msg.force });
+        void vscode.commands.executeCommand("vscode-anymodel.testAllModels", { keys: msg.keys, force: !!msg.force });
         break;
       case "cancelVerify":
         this._engine.cancelVerification();
@@ -165,13 +165,13 @@ export class DashboardPanel implements vscode.Disposable {
         await store.setProviderEnabled(msg.name, !!msg.enabled);
         break;
       case "deleteProvider":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.deleteProvider", { kind: "provider", name: msg.name });
+        await vscode.commands.executeCommand("vscode-anymodel.deleteProvider", { kind: "provider", name: msg.name });
         break;
       case "updateSetting":
         if (["testConcurrency", "providerConcurrency", "cacheTtlHours", "showReasoning", "toolCheck", "budgetLimitUsd", "registerChatProvider", "autoSyncChatLanguageModels"].includes(msg.key)) await store.updateSetting(msg.key as any, msg.value);
         break;
       case "setApiKey":
-        void vscode.commands.executeCommand("vscode-custom-llm-router.setApiKey", { kind: "provider", name: String(msg.name || "") });
+        void vscode.commands.executeCommand("vscode-anymodel.setApiKey", { kind: "provider", name: String(msg.name || "") });
         break;
       case "resetStats": {
         const reset = vscode.l10n.t("Reset");
@@ -186,10 +186,10 @@ export class DashboardPanel implements vscode.Disposable {
         if (Array.isArray(msg.routes)) await store.saveRoutes(msg.routes);
         break;
       case "pullOllama":
-        void vscode.commands.executeCommand("vscode-custom-llm-router.pullOllamaModel", String(msg.name || ""));
+        void vscode.commands.executeCommand("vscode-anymodel.pullOllamaModel", String(msg.name || ""));
         break;
       case "clearCache":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.clearCache");
+        await vscode.commands.executeCommand("vscode-anymodel.clearCache");
         break;
       case "pruneCache":
         await this._engine.pruneCache();
@@ -204,13 +204,13 @@ export class DashboardPanel implements vscode.Disposable {
         await this._engine.autoGenerateRoutes();
         break;
       case "exportConfig":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.exportConfig");
+        await vscode.commands.executeCommand("vscode-anymodel.exportConfig");
         break;
       case "importConfig":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.importConfig");
+        await vscode.commands.executeCommand("vscode-anymodel.importConfig");
         break;
       case "exportStats":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.exportStats");
+        await vscode.commands.executeCommand("vscode-anymodel.exportStats");
         break;
       case "scanLocalServers": {
         const candidates = [
@@ -234,16 +234,16 @@ export class DashboardPanel implements vscode.Disposable {
         break;
       }
       case "appendToChatLanguageModels":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.appendToChatLanguageModels");
+        await vscode.commands.executeCommand("vscode-anymodel.appendToChatLanguageModels");
         break;
       case "openChatLanguageModels":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.openChatLanguageModels");
+        await vscode.commands.executeCommand("vscode-anymodel.openChatLanguageModels");
         break;
       case "openSettings":
         await vscode.commands.executeCommand("workbench.action.openSettings", "customLlmRouter");
         break;
       case "showLogs":
-        await vscode.commands.executeCommand("vscode-custom-llm-router.showLogs");
+        await vscode.commands.executeCommand("vscode-anymodel.showLogs");
         break;
     }
   }

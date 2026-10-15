@@ -1,7 +1,7 @@
 # Project Architecture & Behavioral Rules
 
 ## Core Purpose
-`vscode-custom-llm-router` exposes custom local/remote LLM endpoints as native language models in VS Code's GitHub Copilot.
+`vscode-anymodel` exposes custom local/remote LLM endpoints as native language models in VS Code's GitHub Copilot.
 
 ## Coding Conventions
 1. **TypeScript Quality**: Strict typing, no unresolved promises, clean disposable management via `vscode.Disposable`.

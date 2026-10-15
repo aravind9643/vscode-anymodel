@@ -3,8 +3,8 @@ const assert = require("assert");
 const vscode = require("vscode");
 const { startMockServer } = require("../helpers");
 
-const EXT_ID = "AravindMerugu.vscode-custom-llm-router";
-const CMD = "vscode-custom-llm-router";
+const EXT_ID = "AravindMerugu.vscode-anymodel";
+const CMD = "vscode-anymodel";
 
 async function waitFor(fn, what, timeoutMs = 20000) {
   const deadline = Date.now() + timeoutMs;

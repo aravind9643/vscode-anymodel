@@ -9,7 +9,7 @@ import { pullOllamaModel } from "./ollama";
 import { CatalogModel } from "./types";
 import { appendOrSyncChatLanguageModels, getChatLanguageModelsPath } from "./chatLanguageModels";
 
-const CMD = "vscode-custom-llm-router";
+const CMD = "vscode-anymodel";
 /** Bulk checks touching more remote models than this ask for confirmation first. */
 const REMOTE_CONFIRM_THRESHOLD = 20;
 

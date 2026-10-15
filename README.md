@@ -1,6 +1,6 @@
 # AnyModel — Custom LLMs in Copilot Chat
 
-[![CI](https://github.com/AravindMerugu/vscode-custom-llm-router/actions/workflows/ci.yml/badge.svg)](https://github.com/AravindMerugu/vscode-custom-llm-router/actions/workflows/ci.yml)
+[![CI](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml/badge.svg)](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A51.140-blue.svg)](https://code.visualstudio.com/)
 [![Language Model Provider](https://img.shields.io/badge/API-vscode.lm-blue.svg)](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
 
@@ -34,7 +34,7 @@ Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** regist
 
 1. Install the `.vsix`:
    ```bash
-   code --install-extension vscode-custom-llm-router-2.2.0.vsix --force
+   code --install-extension vscode-anymodel-1.0.0.vsix --force
    ```
 2. Open the **AnyModel** view in the Activity Bar and click **Add Provider**.
 3. Pick a preset (or *Custom*), enter the API key if needed, then click **Test connection** and **Add provider**.

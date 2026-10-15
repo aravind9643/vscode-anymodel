@@ -47,169 +47,169 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-custom-llm-router.openDashboard",
+        "command": "vscode-anymodel.openDashboard",
         "title": "%command.openDashboard%",
         "category": "%category%",
         "icon": "$(dashboard)"
       },
       {
-        "command": "vscode-custom-llm-router.showMenu",
+        "command": "vscode-anymodel.showMenu",
         "title": "%command.showMenu%",
         "category": "%category%",
         "icon": "$(menu)"
       },
       {
-        "command": "vscode-custom-llm-router.addProvider",
+        "command": "vscode-anymodel.addProvider",
         "title": "%command.addProvider%",
         "category": "%category%",
         "icon": "$(add)"
       },
       {
-        "command": "vscode-custom-llm-router.manageProviders",
+        "command": "vscode-anymodel.manageProviders",
         "title": "%command.manageProviders%",
         "category": "%category%",
         "icon": "$(list-tree)"
       },
       {
-        "command": "vscode-custom-llm-router.syncModels",
+        "command": "vscode-anymodel.syncModels",
         "title": "%command.syncModels%",
         "category": "%category%",
         "icon": "$(refresh)"
       },
       {
-        "command": "vscode-custom-llm-router.testAllModels",
+        "command": "vscode-anymodel.testAllModels",
         "title": "%command.testAllModels%",
         "category": "%category%",
         "icon": "$(beaker)"
       },
       {
-        "command": "vscode-custom-llm-router.clearCache",
+        "command": "vscode-anymodel.clearCache",
         "title": "%command.clearCache%",
         "category": "%category%",
         "icon": "$(trash)"
       },
       {
-        "command": "vscode-custom-llm-router.exportConfig",
+        "command": "vscode-anymodel.exportConfig",
         "title": "%command.exportConfig%",
         "category": "%category%",
         "icon": "$(cloud-upload)"
       },
       {
-        "command": "vscode-custom-llm-router.exportStats",
+        "command": "vscode-anymodel.exportStats",
         "title": "%command.exportStats%",
         "category": "%category%",
         "icon": "$(graph)"
       },
       {
-        "command": "vscode-custom-llm-router.importConfig",
+        "command": "vscode-anymodel.importConfig",
         "title": "%command.importConfig%",
         "category": "%category%",
         "icon": "$(cloud-download)"
       },
       {
-        "command": "vscode-custom-llm-router.curateTop",
+        "command": "vscode-anymodel.curateTop",
         "title": "%command.curateTop%",
         "category": "%category%",
         "icon": "$(star)"
       },
       {
-        "command": "vscode-custom-llm-router.deselectAll",
+        "command": "vscode-anymodel.deselectAll",
         "title": "%command.deselectAll%",
         "category": "%category%",
         "icon": "$(clear-all)"
       },
       {
-        "command": "vscode-custom-llm-router.autoRoutes",
+        "command": "vscode-anymodel.autoRoutes",
         "title": "%command.autoRoutes%",
         "category": "%category%",
         "icon": "$(split-horizontal)"
       },
       {
-        "command": "vscode-custom-llm-router.toggleTreeFilter",
+        "command": "vscode-anymodel.toggleTreeFilter",
         "title": "%command.toggleTreeFilter%",
         "category": "%category%",
         "icon": "$(filter)"
       },
       {
-        "command": "vscode-custom-llm-router.pruneCache",
+        "command": "vscode-anymodel.pruneCache",
         "title": "%command.pruneCache%",
         "category": "%category%",
         "icon": "$(discard)"
       },
       {
-        "command": "vscode-custom-llm-router.appendToChatLanguageModels",
+        "command": "vscode-anymodel.appendToChatLanguageModels",
         "title": "%command.appendToChatLanguageModels%",
         "category": "%category%",
         "icon": "$(file-code)"
       },
       {
-        "command": "vscode-custom-llm-router.openChatLanguageModels",
+        "command": "vscode-anymodel.openChatLanguageModels",
         "title": "%command.openChatLanguageModels%",
         "category": "%category%",
         "icon": "$(go-to-file)"
       },
       {
-        "command": "vscode-custom-llm-router.showLogs",
+        "command": "vscode-anymodel.showLogs",
         "title": "%command.showLogs%",
         "category": "%category%",
         "icon": "$(output)"
       },
       {
-        "command": "vscode-custom-llm-router.testProvider",
+        "command": "vscode-anymodel.testProvider",
         "title": "%command.testProvider%",
         "category": "%category%",
         "icon": "$(plug)"
       },
       {
-        "command": "vscode-custom-llm-router.verifyProvider",
+        "command": "vscode-anymodel.verifyProvider",
         "title": "%command.verifyProvider%",
         "category": "%category%",
         "icon": "$(beaker)"
       },
       {
-        "command": "vscode-custom-llm-router.editProvider",
+        "command": "vscode-anymodel.editProvider",
         "title": "%command.editProvider%",
         "category": "%category%",
         "icon": "$(edit)"
       },
       {
-        "command": "vscode-custom-llm-router.enableProvider",
+        "command": "vscode-anymodel.enableProvider",
         "title": "%command.enableProvider%",
         "category": "%category%",
         "icon": "$(eye)"
       },
       {
-        "command": "vscode-custom-llm-router.disableProvider",
+        "command": "vscode-anymodel.disableProvider",
         "title": "%command.disableProvider%",
         "category": "%category%",
         "icon": "$(eye-closed)"
       },
       {
-        "command": "vscode-custom-llm-router.deleteProvider",
+        "command": "vscode-anymodel.deleteProvider",
         "title": "%command.deleteProvider%",
         "category": "%category%",
         "icon": "$(trash)"
       },
       {
-        "command": "vscode-custom-llm-router.pingModel",
+        "command": "vscode-anymodel.pingModel",
         "title": "%command.pingModel%",
         "category": "%category%",
         "icon": "$(debug-rerun)"
       },
       {
-        "command": "vscode-custom-llm-router.editModel",
+        "command": "vscode-anymodel.editModel",
         "title": "%command.editModel%",
         "category": "%category%",
         "icon": "$(settings)"
       },
       {
-        "command": "vscode-custom-llm-router.pullOllamaModel",
+        "command": "vscode-anymodel.pullOllamaModel",
         "title": "%command.pullOllamaModel%",
         "category": "%category%",
         "icon": "$(cloud-download)"
       },
       {
-        "command": "vscode-custom-llm-router.setApiKey",
+        "command": "vscode-anymodel.setApiKey",
         "title": "%command.setApiKey%",
         "category": "%category%",
         "icon": "$(key)"
@@ -243,161 +243,161 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "vscode-custom-llm-router.testProvider",
+          "command": "vscode-anymodel.testProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.verifyProvider",
+          "command": "vscode-anymodel.verifyProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.editProvider",
+          "command": "vscode-anymodel.editProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.enableProvider",
+          "command": "vscode-anymodel.enableProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.disableProvider",
+          "command": "vscode-anymodel.disableProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.deleteProvider",
+          "command": "vscode-anymodel.deleteProvider",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.pingModel",
+          "command": "vscode-anymodel.pingModel",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.editModel",
+          "command": "vscode-anymodel.editModel",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.pullOllamaModel",
+          "command": "vscode-anymodel.pullOllamaModel",
           "when": "false"
         },
         {
-          "command": "vscode-custom-llm-router.setApiKey",
+          "command": "vscode-anymodel.setApiKey",
           "when": "false"
         }
       ],
       "view/title": [
         {
-          "command": "vscode-custom-llm-router.addProvider",
+          "command": "vscode-anymodel.addProvider",
           "when": "view == llmRouter.providers",
           "group": "navigation@1"
         },
         {
-          "command": "vscode-custom-llm-router.syncModels",
+          "command": "vscode-anymodel.syncModels",
           "when": "view == llmRouter.providers",
           "group": "navigation@2"
         },
         {
-          "command": "vscode-custom-llm-router.testAllModels",
+          "command": "vscode-anymodel.testAllModels",
           "when": "view == llmRouter.providers",
           "group": "navigation@3"
         },
         {
-          "command": "vscode-custom-llm-router.openDashboard",
+          "command": "vscode-anymodel.openDashboard",
           "when": "view == llmRouter.providers",
           "group": "navigation@4"
         },
         {
-          "command": "vscode-custom-llm-router.toggleTreeFilter",
+          "command": "vscode-anymodel.toggleTreeFilter",
           "when": "view == llmRouter.providers",
           "group": "navigation@5"
         },
         {
-          "command": "vscode-custom-llm-router.importConfig",
+          "command": "vscode-anymodel.importConfig",
           "when": "view == llmRouter.providers",
           "group": "2_config@1"
         },
         {
-          "command": "vscode-custom-llm-router.exportConfig",
+          "command": "vscode-anymodel.exportConfig",
           "when": "view == llmRouter.providers",
           "group": "2_config@2"
         },
         {
-          "command": "vscode-custom-llm-router.clearCache",
+          "command": "vscode-anymodel.clearCache",
           "when": "view == llmRouter.providers",
           "group": "3_maintenance@1"
         },
         {
-          "command": "vscode-custom-llm-router.showLogs",
+          "command": "vscode-anymodel.showLogs",
           "when": "view == llmRouter.providers",
           "group": "3_maintenance@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "vscode-custom-llm-router.setApiKey",
+          "command": "vscode-anymodel.setApiKey",
           "when": "view == llmRouter.providers && viewItem =~ /needskey/",
           "group": "inline@0"
         },
         {
-          "command": "vscode-custom-llm-router.verifyProvider",
+          "command": "vscode-anymodel.verifyProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider\\.enabled/",
           "group": "inline@1"
         },
         {
-          "command": "vscode-custom-llm-router.editProvider",
+          "command": "vscode-anymodel.editProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider/",
           "group": "inline@2"
         },
         {
-          "command": "vscode-custom-llm-router.testProvider",
+          "command": "vscode-anymodel.testProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider\\.enabled/",
           "group": "1_test@1"
         },
         {
-          "command": "vscode-custom-llm-router.verifyProvider",
+          "command": "vscode-anymodel.verifyProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider\\.enabled/",
           "group": "1_test@2"
         },
         {
-          "command": "vscode-custom-llm-router.pullOllamaModel",
+          "command": "vscode-anymodel.pullOllamaModel",
           "when": "view == llmRouter.providers && viewItem == provider.enabled.ollama",
           "group": "1_test@3"
         },
         {
-          "command": "vscode-custom-llm-router.editProvider",
+          "command": "vscode-anymodel.editProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider/",
           "group": "2_edit@1"
         },
         {
-          "command": "vscode-custom-llm-router.disableProvider",
+          "command": "vscode-anymodel.disableProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider\\.enabled/",
           "group": "2_edit@2"
         },
         {
-          "command": "vscode-custom-llm-router.enableProvider",
+          "command": "vscode-anymodel.enableProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider\\.disabled/",
           "group": "2_edit@2"
         },
         {
-          "command": "vscode-custom-llm-router.deleteProvider",
+          "command": "vscode-anymodel.deleteProvider",
           "when": "view == llmRouter.providers && viewItem =~ /^provider/",
           "group": "3_danger@1"
         },
         {
-          "command": "vscode-custom-llm-router.pingModel",
+          "command": "vscode-anymodel.pingModel",
           "when": "view == llmRouter.providers && viewItem =~ /^model\\.(working|failed|untested)$/",
           "group": "inline@1"
         },
         {
-          "command": "vscode-custom-llm-router.pingModel",
+          "command": "vscode-anymodel.pingModel",
           "when": "view == llmRouter.providers && viewItem =~ /^model\\./",
           "group": "1_model@1"
         },
         {
-          "command": "vscode-custom-llm-router.editModel",
+          "command": "vscode-anymodel.editModel",
           "when": "view == llmRouter.providers && viewItem =~ /^model\\./",
           "group": "1_model@2"
         },
         {
-          "command": "vscode-custom-llm-router.setApiKey",
+          "command": "vscode-anymodel.setApiKey",
           "when": "view == llmRouter.providers && viewItem =~ /^provider/",
           "group": "2_edit@3"
         }
