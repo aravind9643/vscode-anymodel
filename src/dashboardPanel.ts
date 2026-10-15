@@ -28,7 +28,7 @@ export class DashboardPanel implements vscode.Disposable {
       if (focus) DashboardPanel._current._focus(focus);
       return;
     }
-    const panel = vscode.window.createWebviewPanel("customLlmRouterDashboard", "AnyModel", vscode.ViewColumn.Active, {
+    const panel = vscode.window.createWebviewPanel("anyModelDashboard", "AnyModel", vscode.ViewColumn.Active, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
@@ -50,7 +50,7 @@ export class DashboardPanel implements vscode.Disposable {
       this._panel.webview.onDidReceiveMessage((msg) => this._handle(msg).catch((err) => this._error(err))),
       this._engine.onDidChange(() => this._postState()),
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration("customLlmRouter")) this._postState();
+        if (e.affectsConfiguration("anyModel") || e.affectsConfiguration("customLlmRouter")) this._postState();
       })
     );
   }
@@ -240,7 +240,7 @@ export class DashboardPanel implements vscode.Disposable {
         await vscode.commands.executeCommand("vscode-anymodel.openChatLanguageModels");
         break;
       case "openSettings":
-        await vscode.commands.executeCommand("workbench.action.openSettings", "customLlmRouter");
+        await vscode.commands.executeCommand("workbench.action.openSettings", "anyModel");
         break;
       case "showLogs":
         await vscode.commands.executeCommand("vscode-anymodel.showLogs");

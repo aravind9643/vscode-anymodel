@@ -7,7 +7,7 @@ const { spawn } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 
-/** In-memory `customLlmRouter.*` configuration used by the stubbed workspace API. */
+/** In-memory `anyModel.*` configuration used by the stubbed workspace API. */
 const config = {};
 
 class EventEmitter {

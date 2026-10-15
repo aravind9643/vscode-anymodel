@@ -72,22 +72,22 @@ vscode-anymodel/
 - `ModelEngine` is the single source of runtime state and fires `onDidChange` (coalesced) for the tree, dashboard, status bar and chat provider.
 
 ### Copilot exposure rule
-A model is exposed to Copilot **only if** it is in `customLlmRouter.copilotModels` (opt-in) **and** its cached verification is `working`. Selecting an untested model triggers verification. Never bypass `engine.getCopilotModels()`.
+A model is exposed to Copilot **only if** it is in `anyModel.copilotModels` (opt-in) **and** its cached verification is `working`. Selecting an untested model triggers verification. Never bypass `engine.getCopilotModels()`.
 
 ### Routes (fallback)
-- `customLlmRouter.routes`: `{ name, models: [key…] }` registered as `route/<slug>`; exposed while ≥1 member is working.
+- `anyModel.routes`: `{ name, models: [key…] }` registered as `route/<slug>`; exposed while ≥1 member is working.
 - Members are tried in order; a failure **before any output** (`RetryableError`) moves to the next; failures after output are surfaced. With tools in the request, tool-capable members are preferred.
 
 ### Limits & capabilities
-- Precedence: user override (`modelOverrides`) → native API (Ollama `/api/show`, LM Studio `/api/v0/models`, cached 7 days in `customLlmRouter.nativeMeta`) → `/models` fields → name-based guess (`contextSource: "guess"`).
+- Precedence: user override (`modelOverrides`) → native API (Ollama `/api/show`, LM Studio `/api/v0/models`, cached 7 days in `anyModel.nativeMeta`) → `/models` fields → name-based guess (`contextSource: "guess"`).
 - Tool check (`toolCheck: full`) classifies `called` / `accepted` / `unsupported`; only `unsupported` disables tool calling.
 
 ### Telemetry (local only)
-- `customLlmRouter.modelStats`: per-model requests, failures, TTFT and tokens/s (EMA) from real chats.
-- `customLlmRouter.tokenRatio`: chars-per-token learned from `usage.prompt_tokens` (requested via `stream_options.include_usage`; providers that reject it are remembered for the session).
+- `anyModel.modelStats`: per-model requests, failures, TTFT and tokens/s (EMA) from real chats.
+- `anyModel.tokenRatio`: chars-per-token learned from `usage.prompt_tokens` (requested via `stream_options.include_usage`; providers that reject it are remembered for the session).
 
 ### Verification cache
-- `globalState` key `customLlmRouter.verifiedCache`, TTL from `customLlmRouter.cacheTtlHours` (default 48h), saves debounced.
+- `globalState` key `anyModel.verifiedCache`, TTL from `anyModel.cacheTtlHours` (default 48h), saves debounced.
 - On startup, selected models with expired results are re-verified in the background so they don't vanish from Copilot.
 - Chat requests only mark a model failed on definitive errors (HTTP 404 / "model not found"), never on 429/5xx.
 
@@ -103,7 +103,7 @@ A model is exposed to Copilot **only if** it is in `customLlmRouter.copilotModel
   - `fallbacks: "default"` only on api.anthropic.com for Claude Fable 5.1 / Opus 5.5 / Opus 5 / Sonnet 5.5
 
 ### Secrets
-API keys are stored in `context.secrets` under `customLlmRouter.apiKey.<providerName>`. Header values whose names look like credentials (`isSecretHeaderName`) go under `customLlmRouter.headers.<providerName>`; the dashboard shows `SECRET_SENTINEL` for them and saving the sentinel keeps the stored value. Legacy plaintext values are moved on save. Secrets are never sent to the webview or exported. A 401/403 at discovery sets `needsKey` (keys don't sync between machines).
+API keys are stored in `context.secrets` under `anyModel.apiKey.<providerName>`. Header values whose names look like credentials (`isSecretHeaderName`) go under `anyModel.headers.<providerName>`; the dashboard shows `SECRET_SENTINEL` for them and saving the sentinel keeps the stored value. Legacy plaintext values are moved on save. Secrets are never sent to the webview or exported. A 401/403 at discovery sets `needsKey` (keys don't sync between machines).
 
 ### Dashboard protocol (`src/protocol.ts`)
 - `HostMessage` / `WebviewMessage` / `DashboardState` are shared types; change them there and both sides fail to compile until updated.

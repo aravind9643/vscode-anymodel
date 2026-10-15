@@ -24,10 +24,14 @@ import { Auth, ChatRequest, ChatSink, HttpError, ListedModel, transportFor } fro
 import { runPool } from "./pool";
 import { num } from "./transports/openai";
 
-const CACHE_KEY = "customLlmRouter.verifiedCache";
-const META_KEY = "customLlmRouter.nativeMeta";
-const STATS_KEY = "customLlmRouter.modelStats";
-const RATIO_KEY = "customLlmRouter.tokenRatio";
+const CACHE_KEY = "anyModel.verifiedCache";
+const LEGACY_CACHE_KEY = "customLlmRouter.verifiedCache";
+const META_KEY = "anyModel.nativeMeta";
+const LEGACY_META_KEY = "customLlmRouter.nativeMeta";
+const STATS_KEY = "anyModel.modelStats";
+const LEGACY_STATS_KEY = "customLlmRouter.modelStats";
+const RATIO_KEY = "anyModel.tokenRatio";
+const LEGACY_RATIO_KEY = "customLlmRouter.tokenRatio";
 const DISCOVERY_TIMEOUT_MS = 8000;
 const TEST_TIMEOUT_MS = 20000;
 /** Local servers may need this long to load a large model on first use. */
@@ -89,8 +93,8 @@ class PersistedRecord<T> {
   private _data: Record<string, T>;
   private _timer?: NodeJS.Timeout;
 
-  constructor(private readonly _memento: vscode.Memento, private readonly _key: string) {
-    this._data = { ...(_memento.get<Record<string, T>>(_key) || {}) };
+  constructor(private readonly _memento: vscode.Memento, private readonly _key: string, legacyKey?: string) {
+    this._data = { ...((legacyKey ? _memento.get<Record<string, T>>(legacyKey) : {}) || {}), ...(_memento.get<Record<string, T>>(_key) || {}) };
   }
   get(k: string): T | undefined {
     return this._data[k];
@@ -150,9 +154,9 @@ export class ModelEngine implements vscode.Disposable {
     public readonly store: ProviderStore,
     private readonly _log: vscode.LogOutputChannel
   ) {
-    this._meta = new PersistedRecord(_memento, META_KEY);
-    this._stats = new PersistedRecord(_memento, STATS_KEY);
-    this._ratios = new PersistedRecord(_memento, RATIO_KEY);
+    this._meta = new PersistedRecord(_memento, META_KEY, LEGACY_META_KEY);
+    this._stats = new PersistedRecord(_memento, STATS_KEY, LEGACY_STATS_KEY);
+    this._ratios = new PersistedRecord(_memento, RATIO_KEY, LEGACY_RATIO_KEY);
     this._loadCache();
   }
 
@@ -176,7 +180,10 @@ export class ModelEngine implements vscode.Disposable {
   // ------------------------------------------------------------------- cache
 
   private _loadCache() {
-    const stored = this._memento.get<VerifiedCacheStore>(CACHE_KEY, { updatedAt: 0, entries: {} });
+    const stored =
+      this._memento.get<VerifiedCacheStore>(CACHE_KEY) ||
+      this._memento.get<VerifiedCacheStore>(LEGACY_CACHE_KEY) ||
+      { updatedAt: 0, entries: {} };
     this._cache = { updatedAt: stored.updatedAt || 0, entries: { ...(stored.entries || {}) } };
     const ttl = this.store.cacheTtlMs;
     const now = Date.now();

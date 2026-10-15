@@ -9,7 +9,7 @@ export interface StaticModelConfig {
   reasoning?: boolean;
 }
 
-/** Provider entry as persisted in `customLlmRouter.providers`. */
+/** Provider entry as persisted in `anyModel.providers`. */
 export interface ProviderConfig {
   name: string;
   endpointUrl: string;
@@ -34,7 +34,7 @@ export interface ProviderConfig {
 
 export type ApiKind = "openai" | "ollama" | "anthropic";
 
-/** User-set per-model corrections, stored in `customLlmRouter.modelOverrides` by model key. */
+/** User-set per-model corrections, stored in `anyModel.modelOverrides` by model key. */
 export interface ModelOverride {
   name?: string;
   contextWindow?: number;
@@ -49,7 +49,7 @@ export interface ModelOverride {
 
 export type RoutePolicy = "priority" | "round-robin" | "least-latency";
 
-/** A virtual Copilot model that tries its member models in order (`customLlmRouter.routes`). */
+/** A virtual Copilot model that tries its member models in order (`anyModel.routes`). */
 export interface RouteConfig {
   name: string;
   models: string[];

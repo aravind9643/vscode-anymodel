@@ -3,9 +3,12 @@ import { ModelOverride, ProviderConfig, RouteConfig, modelKey } from "./types";
 import { isSecretHeaderName } from "./endpoints";
 import type { Auth } from "./transports/types";
 
-const SECTION = "customLlmRouter";
+const SECTION = "anyModel";
+const LEGACY_SECTION = "customLlmRouter";
 const secretId = (providerName: string) => `${SECTION}.apiKey.${providerName}`;
+const legacySecretId = (providerName: string) => `${LEGACY_SECTION}.apiKey.${providerName}`;
 const headersId = (providerName: string) => `${SECTION}.headers.${providerName}`;
+const legacyHeadersId = (providerName: string) => `${LEGACY_SECTION}.headers.${providerName}`;
 /** Placeholder the dashboard shows for a stored secret header value; saving it back keeps the value. */
 export const SECRET_SENTINEL = "••••••";
 
@@ -29,7 +32,9 @@ export class ProviderStore {
     this._secretNames.clear();
     this._secretHeaderNames.clear();
     for (const p of this.getProviders()) {
-      if (await this._secrets.get(secretId(p.name))) this._secretNames.add(p.name);
+      if ((await this._secrets.get(secretId(p.name))) || (await this._secrets.get(legacySecretId(p.name)))) {
+        this._secretNames.add(p.name);
+      }
       const headers = Object.keys(await this._getSecretHeaders(p.name));
       if (headers.length) this._secretHeaderNames.set(p.name, headers);
     }
@@ -49,7 +54,7 @@ export class ProviderStore {
   }
 
   public async getApiKey(p: ProviderConfig): Promise<string | undefined> {
-    return (await this._secrets.get(secretId(p.name))) || p.apiKey || undefined;
+    return (await this._secrets.get(secretId(p.name))) || (await this._secrets.get(legacySecretId(p.name))) || p.apiKey || undefined;
   }
 
   /** Everything needed to authenticate a request to this provider. */
@@ -58,7 +63,7 @@ export class ProviderStore {
   }
 
   private async _getSecretHeaders(name: string): Promise<Record<string, string>> {
-    const raw = await this._secrets.get(headersId(name));
+    const raw = (await this._secrets.get(headersId(name))) || (await this._secrets.get(legacyHeadersId(name)));
     if (!raw) return {};
     try {
       const parsed = JSON.parse(raw);

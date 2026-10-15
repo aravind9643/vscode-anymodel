@@ -1157,7 +1157,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       ${section("json", "Configuration", "",
         row("Export / import", "Providers, Copilot selection, routes and model overrides as JSON. API keys and secret headers are never exported.",
           `<button class="btn" data-action="export">${icon("cloud-upload")}Export</button><button class="btn" data-action="import">${icon("cloud-download")}Import</button>`) +
-        row("Raw settings", "Edit <code>customLlmRouter.*</code> in VS Code settings, or open the extension log.",
+        row("Raw settings", "Edit <code>anyModel.*</code> in VS Code settings, or open the extension log.",
           `<button class="btn" data-action="open-settings">${icon("settings")}Open settings</button><button class="btn" data-action="logs">${icon("output")}Logs</button>`))}
 
       ${section("warning", "Danger zone", "These can't be undone.",

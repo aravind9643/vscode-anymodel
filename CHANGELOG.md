@@ -19,7 +19,7 @@
 - **Expanded Provider Presets**: One-click configuration for **Cerebras** (ultra-fast inference), **Perplexity** (Sonar search), **xAI (Grok)**, and **SambaNova**.
 - **Local Server Scanner**: One-click scanning for running local LLMs across standard ports (Ollama `11434`, LM Studio `1234`, vLLM `8000`, LocalAI `8080`) with auto-preset filling.
 - **Telemetry & Spend Export**: Export model requests, failure counts, TTFT, tok/s, prompt tokens, completion tokens, and USD costs as CSV or JSON (`Export Usage Statistics…`).
-- **Spend Budget Warnings**: Configurable monthly budget threshold (`customLlmRouter.budgetLimitUsd`) with active dashboard warning banners when spend exceeds budget.
+- **Spend Budget Warnings**: Configurable monthly budget threshold (`anyModel.budgetLimitUsd`) with active dashboard warning banners when spend exceeds budget.
 - **Enhanced Keyboard Ergonomics**: Quick model search focus with `/` and modal/limits dismissal with `Escape`.
 
 ## 2.2.0
@@ -31,7 +31,7 @@
 - **Prices and spend**: provider prices (OpenRouter) or list prices (Anthropic) are shown per model, can be overridden, and are combined with reported usage into a spend estimate per model and in total.
 - **Secret headers**: header values named like `*key*`, `*token*`, `*auth*` or `*secret*` are kept in secret storage, never in `settings.json`.
 - **"API key needed on this machine"**: when a provider rejects the credentials (keys don't sync between machines), the sidebar, dashboard and a one-time notification offer **Set API Key…**.
-- **Per-provider rate limit** for bulk checks (`customLlmRouter.providerConcurrency`, default 3 for remote APIs).
+- **Per-provider rate limit** for bulk checks (`anyModel.providerConcurrency`, default 3 for remote APIs).
 - Usage statistics can be reset from Settings.
 
 ### Changed

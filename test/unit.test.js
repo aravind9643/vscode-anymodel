@@ -189,7 +189,7 @@ const token = () => new vscode.CancellationTokenSource().token;
       engine.renameProvider("Mock", "Mock2");
       await store.saveProvider("Mock", { ...store.findProvider("Mock"), name: "Mock2" }, undefined);
       assert.strictEqual(store.findProvider("Mock2").apiKey, undefined);
-      assert.strictEqual(secrets.data.get("customLlmRouter.apiKey.Mock2"), "legacy-plain");
+      assert.strictEqual(secrets.data.get("anyModel.apiKey.Mock2"), "legacy-plain");
       assert.ok([...store.getSelection()].every((k) => k.startsWith("Mock2::")));
       await engine.refresh();
       assert.strictEqual(engine.getProviderStatuses().find((s) => s.name === "Mock2").keySource, "secret");
@@ -199,7 +199,7 @@ const token = () => new vscode.CancellationTokenSource().token;
     ["secret headers live in SecretStorage; the placeholder keeps them", async () => {
       await store.saveProvider(undefined, { name: "Secure", endpointUrl: `${mock.url}/secure/v1`, headers: { "X-Secret-Token": "tok", "X-Title": "VS Code" } });
       assert.deepStrictEqual(store.findProvider("Secure").headers, { "X-Title": "VS Code" }, "only non-secret headers in settings");
-      assert.deepStrictEqual(JSON.parse(secrets.data.get("customLlmRouter.headers.Secure")), { "X-Secret-Token": "tok" });
+      assert.deepStrictEqual(JSON.parse(secrets.data.get("anyModel.headers.Secure")), { "X-Secret-Token": "tok" });
       await store.saveProvider("Secure", { name: "Secure", endpointUrl: `${mock.url}/secure/v1`, headers: { "X-Secret-Token": SECRET_SENTINEL } });
       await store.init();
       await engine.refresh();

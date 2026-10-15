@@ -78,20 +78,20 @@ Under *Advanced* you can set:
 
 | Setting | Default | Description |
 |---|---|---|
-| `customLlmRouter.providers` | `[]` | Providers (name, endpointUrl, headers, overrides, keepAlive, staticModels, …) |
-| `customLlmRouter.copilotModels` | `[]` | Models shown in Copilot, as `Provider::modelId` |
-| `customLlmRouter.routes` | `[]` | `{ name, models: ["Provider::modelId", …] }`, tried in order |
-| `customLlmRouter.routePolicy` | `priority` | Member selection strategy: `priority` (fallback chain) or `round-robin` |
-| `customLlmRouter.modelOverrides` | `{}` | Per-model `name`, `contextWindow`, `maxOutputTokens`, `toolCalling`, `vision`, `reasoning` |
-| `customLlmRouter.toolCheck` | `full` | `full` = chat + tool call (2 requests per model), `basic` = chat only |
-| `customLlmRouter.testConcurrency` | `8` | Models verified in parallel |
-| `customLlmRouter.providerConcurrency` | `3` | Parallel checks against one remote provider |
-| `customLlmRouter.cacheTtlHours` | `48` | How long verification results are kept |
-| `customLlmRouter.showReasoning` | `true` | Render reasoning output above answers |
-| `customLlmRouter.promptCaching` | `true` | Request prompt caching for supported providers (Anthropic, DeepSeek, OpenAI) |
-| `customLlmRouter.budgetMonthly` | `0` | Monthly spending limit in USD (0 = disabled); warns when exceeded |
-| `customLlmRouter.registerChatProvider` | `true` | Register AnyModel in VS Code's Language Model API (uncheck if using native BYOK sync) |
-| `customLlmRouter.autoSyncChatLanguageModels` | `false` | Automatically sync verified models to VS Code's native `chatLanguageModels.json` |
+| `anyModel.providers` | `[]` | Providers (name, endpointUrl, headers, overrides, keepAlive, staticModels, …) |
+| `anyModel.copilotModels` | `[]` | Models shown in Copilot, as `Provider::modelId` |
+| `anyModel.routes` | `[]` | `{ name, models: ["Provider::modelId", …] }`, tried in order |
+| `anyModel.routePolicy` | `priority` | Member selection strategy: `priority` (fallback chain) or `round-robin` |
+| `anyModel.modelOverrides` | `{}` | Per-model `name`, `contextWindow`, `maxOutputTokens`, `toolCalling`, `vision`, `reasoning` |
+| `anyModel.toolCheck` | `full` | `full` = chat + tool call (2 requests per model), `basic` = chat only |
+| `anyModel.testConcurrency` | `8` | Models verified in parallel |
+| `anyModel.providerConcurrency` | `3` | Parallel checks against one remote provider |
+| `anyModel.cacheTtlHours` | `48` | How long verification results are kept |
+| `anyModel.showReasoning` | `true` | Render reasoning output above answers |
+| `anyModel.promptCaching` | `true` | Request prompt caching for supported providers (Anthropic, DeepSeek, OpenAI) |
+| `anyModel.budgetLimitUsd` | `0` | Monthly spending limit in USD (0 = disabled); warns when exceeded |
+| `anyModel.registerChatProvider` | `true` | Register AnyModel in VS Code's Language Model API (uncheck if using native BYOK sync) |
+| `anyModel.autoSyncChatLanguageModels` | `false` | Automatically sync verified models to VS Code's native `chatLanguageModels.json` |
 
 ## Commands
 

@@ -18,7 +18,7 @@ async function waitFor(fn, what, timeoutMs = 20000) {
 
 suite("AnyModel in VS Code", function () {
   let mock;
-  const cfg = () => vscode.workspace.getConfiguration("customLlmRouter");
+  const cfg = () => vscode.workspace.getConfiguration("anyModel");
 
   suiteSetup(async () => {
     mock = await startMockServer();

@@ -46,15 +46,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration("customLlmRouter.providers")) {
+      if (e.affectsConfiguration("anyModel.providers") || e.affectsConfiguration("customLlmRouter.providers")) {
         void store.init().then(() => engine.refresh());
-      } else if (e.affectsConfiguration("customLlmRouter.modelOverrides")) {
+      } else if (e.affectsConfiguration("anyModel.modelOverrides") || e.affectsConfiguration("customLlmRouter.modelOverrides")) {
         void engine.refresh(); // limits are computed at discovery time
       } else if (
+        e.affectsConfiguration("anyModel.copilotModels") ||
         e.affectsConfiguration("customLlmRouter.copilotModels") ||
+        e.affectsConfiguration("anyModel.routes") ||
         e.affectsConfiguration("customLlmRouter.routes") ||
+        e.affectsConfiguration("anyModel.cacheTtlHours") ||
         e.affectsConfiguration("customLlmRouter.cacheTtlHours") ||
+        e.affectsConfiguration("anyModel.registerChatProvider") ||
         e.affectsConfiguration("customLlmRouter.registerChatProvider") ||
+        e.affectsConfiguration("anyModel.autoSyncChatLanguageModels") ||
         e.affectsConfiguration("customLlmRouter.autoSyncChatLanguageModels")
       ) {
         engine.onSelectionChanged();

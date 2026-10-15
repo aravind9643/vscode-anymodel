@@ -412,7 +412,7 @@
     "configuration": {
       "title": "%config.title%",
       "properties": {
-        "customLlmRouter.providers": {
+        "anyModel.providers": {
           "type": "array",
           "order": 0,
           "default": [],
@@ -531,7 +531,7 @@
           },
           "markdownDescription": "%config.providers%"
         },
-        "customLlmRouter.copilotModels": {
+        "anyModel.copilotModels": {
           "type": "array",
           "order": 1,
           "items": {
@@ -539,7 +539,7 @@
           },
           "markdownDescription": "%config.copilotModels%"
         },
-        "customLlmRouter.testConcurrency": {
+        "anyModel.testConcurrency": {
           "type": "integer",
           "order": 2,
           "default": 8,
@@ -547,7 +547,7 @@
           "maximum": 25,
           "description": "%config.testConcurrency%"
         },
-        "customLlmRouter.cacheTtlHours": {
+        "anyModel.cacheTtlHours": {
           "type": "integer",
           "order": 3,
           "default": 48,
@@ -555,21 +555,21 @@
           "maximum": 720,
           "description": "%config.cacheTtlHours%"
         },
-        "customLlmRouter.showReasoning": {
+        "anyModel.showReasoning": {
           "type": "boolean",
           "order": 6,
           "default": true,
           "description": "%config.showReasoning%"
         },
-        "customLlmRouter.disabledModelIds": {
+        "anyModel.disabledModelIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "default": [],
-          "markdownDeprecationMessage": "Replaced by `#customLlmRouter.copilotModels#`. Only read once to migrate your previous selection."
+          "markdownDeprecationMessage": "Replaced by `#anyModel.copilotModels#`. Only read once to migrate your previous selection."
         },
-        "customLlmRouter.modelOverrides": {
+        "anyModel.modelOverrides": {
           "type": "object",
           "order": 2,
           "default": {},
@@ -608,7 +608,7 @@
           },
           "markdownDescription": "%config.modelOverrides%"
         },
-        "customLlmRouter.routes": {
+        "anyModel.routes": {
           "type": "array",
           "order": 3,
           "default": [],
@@ -642,7 +642,7 @@
           },
           "markdownDescription": "%config.routes%"
         },
-        "customLlmRouter.toolCheck": {
+        "anyModel.toolCheck": {
           "type": "string",
           "order": 5,
           "enum": [
@@ -652,7 +652,7 @@
           "default": "full",
           "markdownDescription": "%config.toolCheck%"
         },
-        "customLlmRouter.providerConcurrency": {
+        "anyModel.providerConcurrency": {
           "type": "integer",
           "order": 7,
           "default": 3,
@@ -660,20 +660,20 @@
           "maximum": 25,
           "description": "%config.providerConcurrency%"
         },
-        "customLlmRouter.budgetLimitUsd": {
+        "anyModel.budgetLimitUsd": {
           "type": "number",
           "order": 8,
           "default": 0,
           "minimum": 0,
           "description": "%config.budgetLimitUsd%"
         },
-        "customLlmRouter.registerChatProvider": {
+        "anyModel.registerChatProvider": {
           "type": "boolean",
           "order": 9,
           "default": true,
           "description": "%config.registerChatProvider%"
         },
-        "customLlmRouter.autoSyncChatLanguageModels": {
+        "anyModel.autoSyncChatLanguageModels": {
           "type": "boolean",
           "order": 10,
           "default": false,
