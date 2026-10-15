@@ -5,6 +5,13 @@ import { defineConfig } from "@vscode/test-cli";
 export default defineConfig({
   files: "test/integration/**/*.test.js",
   version: process.env.VSCODE_TEST_VERSION || "stable",
-  launchArgs: ["--disable-extensions", "--skip-welcome", "--skip-release-notes"],
+  launchArgs: [
+    "--disable-extensions",
+    "--skip-welcome",
+    "--skip-release-notes",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-workspace-trust",
+  ],
   mocha: { ui: "tdd", timeout: 60000 },
 });
