@@ -181,9 +181,9 @@ _Last updated: 2026-10-15._
   - Complete workspace migration from `vscode-custom-llm-router` to `vscode-anymodel` (commands, settings references, and repo rename to `aravind9643/vscode-anymodel`).
   - Added automated GitHub release workflow (`.github/workflows/release.yml`) for git tag releases (`v*.*.*`).
   - Upgraded CI runner Node version to Node 22 LTS.
-  - Comprehensive `README.md` documentation update (settings, commands, @tag filter cheat sheet, BYOK provision).
+  - Added launch stability flags (`--disable-gpu`, `--disable-dev-shm-usage`, `--disable-workspace-trust`) in `.vscode-test.mjs` and workflow concurrency to prevent headless Electron window hangs.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI**: green on **ubuntu-latest and windows-latest** (run 38731340392).
+- **CI**: green on **ubuntu-latest and windows-latest** (push run 38738536432, PR run 38738542943).
 
 ### Suggested next steps
 1. Open a PR from `redesign/v2` to `main` (`gh pr create`).
