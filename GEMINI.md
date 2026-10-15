@@ -178,17 +178,15 @@ _Last updated: 2026-10-15._
   - Added `resolveAnthropicChatUrl()` supporting custom proxy endpoints for `chatLanguageModels.json` export and sync.
   - Added sub-provider prefix stripping for Google Gemini (`models/` prefix) in `detectSubProvider()`.
   - Added raw `<think>` tag stripping in `stripReasoning()` to protect history turns.
-  - Complete workspace migration from `vscode-custom-llm-router` to `vscode-anymodel` (commands, settings references, and repo rename to `aravind9643/vscode-anymodel`).
-  - Added automated GitHub release workflow (`.github/workflows/release.yml`) for git tag releases (`v*.*.*`).
-  - Upgraded CI runner Node version to Node 22 LTS.
-  - Added launch stability flags (`--disable-gpu`, `--disable-dev-shm-usage`, `--disable-workspace-trust`) in `.vscode-test.mjs` and workflow concurrency to prevent headless Electron window hangs.
+  - Merged Pull Request #1 into `main`, bringing all v2 features, branding, and stability fixes to the default branch.
+  - Added automated GitHub release workflow (`.github/workflows/release.yml`) with `workflow_dispatch` and tag trigger.
+  - Successfully published Release [v1.0.0](https://github.com/aravind9643/vscode-anymodel/releases/tag/v1.0.0) with packaged `vscode-anymodel-1.0.0.vsix` asset.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI**: green on **ubuntu-latest and windows-latest** (push run 38738536432, PR run 38738542943).
+- **CI & Release**: all green on **main** (CI run 38738940226, Release run 38739559561).
 
 ### Suggested next steps
-1. Open a PR from `redesign/v2` to `main` (`gh pr create`).
-2. Manual smoke test against real Ollama / OpenRouter / Anthropic keys.
-3. Marketplace: publisher verification, `vsce publish`.
+1. Marketplace publishing: configure VS Code Marketplace publisher token (`vsce publish`).
+2. Manual smoke test against live Ollama / OpenRouter / Anthropic keys.
 4. Backlog ideas not implemented:
    - VS Code's native thinking part (`LanguageModelThinkingPart`) once it leaves proposed API — today reasoning is a quoted block stripped from history (`stripReasoning`).
    - Translations for the dashboard UI (only manifest + extension-host strings are localizable; `l10n/bundle.l10n.json` holds the English source).
