@@ -3,6 +3,7 @@
 [![CI](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml/badge.svg)](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A51.140-blue.svg)](https://code.visualstudio.com/)
 [![Language Model Provider](https://img.shields.io/badge/API-vscode.lm-blue.svg)](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
 
@@ -11,24 +12,27 @@ Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** regist
 ## Features
 
 - **Dashboard**: an Overview page with provider health, spend against your budget, items that need attention and the current Copilot lineup; plus Models, Providers, Routes and Settings pages. It follows your VS Code theme, including high contrast.
-
 - **Native in Copilot**: the models you pick appear in the Copilot Chat model picker under *AnyModel*.
+- **Native VS Code BYOK Sync (`chatLanguageModels.json`)**: export your models directly to VS Code's native `chatLanguageModels.json` with 1-click append or background auto-sync, complete with automatic `.bak` safety backups.
 - **Three wire protocols**:
   - **OpenAI-compatible**: most servers.
   - **Ollama native** (`/api/chat`): sends the context length (`num_ctx`) so long chats aren't cut short, plus keep-alive and native thinking.
   - **Anthropic Messages API**: uses the official SDK, with model limits from the Models API, summarized adaptive thinking, and refusal fallbacks on supported models.
-- **Fallback routes**: combine several models into one picker entry. If the first is down, rate-limited or errors before answering, the next one takes over (for example, a local model first and a cloud model as backup).
-- **Health-checked**: each model gets a quick chat check. With the full check it is also asked to call a tool, and the result is shown as *calls tools*, *accepts tools but ignores them*, or *no tool support*. Broken models never reach the picker.
-- **Accurate limits**: real context windows are read from Ollama (`/api/show`) and LM Studio. You can override the name, context window, max output, tool support and image input for any model, and guessed values are marked `~`.
-- **Cost-aware**:
+- **Smart Fallback Routes**: combine several models into one picker entry with automatic failover (e.g., local first with cloud backup). 1-click **Auto-Generate Routes** creates balanced fallback tiers like *Cost Saver*, *Coding & Reasoning*, and *Balanced*.
+- **Multi-Provider & Gateway Support**: automatic sub-provider mapping for aggregators like OpenRouter and OmniRoute (Moonshot, DeepSeek, Zhipu, MiniMax, Baichuan, Qwen, etc.), with hierarchical filtering and upstream diagnostics.
+- **Local Server Auto-Scan**: 1-click scan discovers locally running engines on your machine (Ollama on 11434, LM Studio on 1234, vLLM on 8000, LocalAI on 8080).
+- **Health-checked & Tool-tested**: each model gets a quick chat check. With the full check it is also asked to call a tool, and the result is shown as *calls tools*, *accepts tools but ignores them*, or *no tool support*. Broken models never reach the picker.
+- **Accurate limits**: real context windows are read from Ollama (`/api/show`) and LM Studio. You can override the name, context window, max output, tool support, vision and reasoning for any model, and guessed values are marked `~`.
+- **Cost & Budget Management**:
+  - Set a monthly spend budget with visual meters and proactive warning alerts.
   - Before checking many models on remote (possibly paid) providers, it asks first and offers to check only your selected models. A *basic* mode halves the number of requests.
-  - Bulk checks are rate-limited per provider.
+  - Bulk checks are rate-limited per provider with jittered exponential backoff for 429/5xx responses.
   - Prices come from OpenRouter or Anthropic's list prices and can be overridden per model. Spend is estimated from reported usage.
-- **Real performance stats**: time to first token and tokens per second, measured from your actual chats. They stay on your machine.
+- **Real performance stats & Telemetry**: time to first token (TTFT) and tokens per second, measured from your actual chats. Export analytics as JSON or CSV anytime.
 - **Calibrated token counts**: learned from the usage numbers the server reports, so Copilot trims context at the right point.
 - **Ollama extras**: pull models from the dashboard or sidebar, and keep models loaded with a per-provider keep-alive.
-- **Secure keys**: API keys and credential-like header values live in VS Code's encrypted secret storage, never in `settings.json`. Keys are stored per machine, so when a provider rejects the credentials on a new machine you're asked to enter the key there.
-- **Sidebar and dashboard**: an Activity Bar view with each provider's health and per-model checkboxes, plus a dashboard for searching and filtering models, bulk actions, routes and settings. It handles thousands of models without slowing down.
+- **Secure keys**: API keys and credential-like header values live in VS Code's encrypted secret storage, never in `settings.json`. Keys are stored per machine.
+- **Sidebar and dashboard**: an Activity Bar view with each provider's health and per-model checkboxes, plus a dashboard with instant `@tag` filters (`@tools`, `@coding`, `@reasoning`, `@vision`, `@fast`), search keyboard shortcuts (Ctrl+F / Cmd+F), 1-click model ID copy, and smooth scrolling for thousands of models.
 
 ## Getting started
 
@@ -77,24 +81,51 @@ Under *Advanced* you can set:
 | `customLlmRouter.providers` | `[]` | Providers (name, endpointUrl, headers, overrides, keepAlive, staticModels, …) |
 | `customLlmRouter.copilotModels` | `[]` | Models shown in Copilot, as `Provider::modelId` |
 | `customLlmRouter.routes` | `[]` | `{ name, models: ["Provider::modelId", …] }`, tried in order |
-| `customLlmRouter.modelOverrides` | `{}` | Per-model `name`, `contextWindow`, `maxOutputTokens`, `toolCalling`, `vision` |
+| `customLlmRouter.routePolicy` | `priority` | Member selection strategy: `priority` (fallback chain) or `round-robin` |
+| `customLlmRouter.modelOverrides` | `{}` | Per-model `name`, `contextWindow`, `maxOutputTokens`, `toolCalling`, `vision`, `reasoning` |
 | `customLlmRouter.toolCheck` | `full` | `full` = chat + tool call (2 requests per model), `basic` = chat only |
 | `customLlmRouter.testConcurrency` | `8` | Models verified in parallel |
 | `customLlmRouter.providerConcurrency` | `3` | Parallel checks against one remote provider |
 | `customLlmRouter.cacheTtlHours` | `48` | How long verification results are kept |
 | `customLlmRouter.showReasoning` | `true` | Render reasoning output above answers |
+| `customLlmRouter.promptCaching` | `true` | Request prompt caching for supported providers (Anthropic, DeepSeek, OpenAI) |
+| `customLlmRouter.budgetMonthly` | `0` | Monthly spending limit in USD (0 = disabled); warns when exceeded |
+| `customLlmRouter.registerChatProvider` | `true` | Register AnyModel in VS Code's Language Model API (uncheck if using native BYOK sync) |
+| `customLlmRouter.autoSyncChatLanguageModels` | `false` | Automatically sync verified models to VS Code's native `chatLanguageModels.json` |
 
 ## Commands
 
 | Command | What it does |
 |---|---|
 | **AnyModel: Open Dashboard** | Models, providers, routes and settings |
-| **AnyModel: Add Provider** | Provider editor with presets |
+| **AnyModel: Add Provider** | Provider editor with presets and local scanner |
 | **AnyModel: Refresh Models** | Re-fetches every provider's model list |
 | **AnyModel: Verify Untested Models** | Health-checks models without a fresh result (asks first for large remote runs) |
 | **AnyModel: Clear Verification Results** | Forgets results and re-checks the selected models |
-| **AnyModel: Export / Import Configuration…** | Providers, selection, routes and overrides (keys are never exported) |
+| **AnyModel: Prune Stale Verification Cache** | Removes verification cache entries for models that no longer exist |
+| **AnyModel: Auto-Generate Smart Routes** | Generates balanced fallback chains (*Cost Saver*, *Reasoning*, *Balanced*) |
+| **AnyModel: Curate Top Models** | Automatically selects top-tier models across active providers |
+| **AnyModel: Append to chatLanguageModels.json** | Appends verified models to VS Code's native BYOK configuration with `.bak` backup |
+| **AnyModel: Open chatLanguageModels.json** | Opens the native VS Code configuration file in your editor |
+| **AnyModel: Export Configuration…** | Exports providers, selection, routes, overrides and budget to JSON |
+| **AnyModel: Import Configuration…** | Imports configuration from JSON (keys are kept securely on each machine) |
+| **AnyModel: Export Telemetry & Performance Stats…** | Exports real request counts, token speeds and TTFT as JSON or CSV |
+| **AnyModel: Deselect All Models** | Unchecks all models from Copilot |
+| **AnyModel: Toggle Sidebar Model Filter** | Toggles showing only selected/working models in the sidebar tree |
 | **AnyModel: Show Logs** | Discovery, verification, route fallbacks and chat errors |
+
+### Dashboard Search & Filter Syntax
+
+In the **Models** tab of the dashboard, you can filter models rapidly:
+- **`@tools`**: Show models with verified tool calling support
+- **`@vision`**: Show multimodal models that accept images
+- **`@reasoning`**: Show models with reasoning / thinking capabilities
+- **`@coding`**: Show coding-specialized models (Coder, DeepSeek, Dev, etc.)
+- **`@fast`**: Show ultra-low-latency models (<250ms TTFT)
+- **`@copilot`**: Show models currently enabled for Copilot Chat
+- **`@working`** / **`@failed`** / **`@untested`**: Filter by health check status
+- **`@<provider>`**: Filter by provider name (e.g. `@ollama`, `@openrouter`, `@groq`)
+- **Keyboard shortcuts**: Press `Ctrl+F` (or `Cmd+F`) anywhere in the dashboard to focus search; press `Escape` to clear. Click the copy icon next to any model ID for instant clipboard copy.
 
 Right-click a provider in the sidebar to set its API key, test it, re-test its models, pull an Ollama model, edit, enable or disable, or delete it. Right-click a model to re-test it or edit its limits.
 

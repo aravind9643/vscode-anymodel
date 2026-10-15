@@ -178,8 +178,12 @@ _Last updated: 2026-10-15._
   - Added `resolveAnthropicChatUrl()` supporting custom proxy endpoints for `chatLanguageModels.json` export and sync.
   - Added sub-provider prefix stripping for Google Gemini (`models/` prefix) in `detectSubProvider()`.
   - Added raw `<think>` tag stripping in `stripReasoning()` to protect history turns.
+  - Complete workspace migration from `vscode-custom-llm-router` to `vscode-anymodel` (commands, settings references, and repo rename to `aravind9643/vscode-anymodel`).
+  - Added automated GitHub release workflow (`.github/workflows/release.yml`) for git tag releases (`v*.*.*`).
+  - Upgraded CI runner Node version to Node 22 LTS.
+  - Comprehensive `README.md` documentation update (settings, commands, @tag filter cheat sheet, BYOK provision).
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI**: green on **ubuntu-latest and windows-latest**.
+- **CI**: green on **ubuntu-latest and windows-latest** (run 38731340392).
 
 ### Suggested next steps
 1. Open a PR from `redesign/v2` to `main` (`gh pr create`).
