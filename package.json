@@ -230,7 +230,7 @@
           "id": "llmRouter.providers",
           "name": "%view.providers%",
           "icon": "media/sidebar-icon.svg",
-          "contextualTitle": "LLM Router"
+          "contextualTitle": "%config.title%"
         }
       ]
     },
@@ -406,7 +406,7 @@
     "languageModelChatProviders": [
       {
         "vendor": "custom-llm-router",
-        "displayName": "Custom LLM Router"
+        "displayName": "%config.title%"
       }
     ],
     "configuration": {

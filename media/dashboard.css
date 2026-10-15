@@ -1,4 +1,4 @@
-/* LLM Router dashboard. Only var(--vscode-*) colours, so light, dark and high-contrast themes all work. */
+/* AnyModel dashboard. Only var(--vscode-*) colours, so light, dark and high-contrast themes all work. */
 :root {
   --bg: var(--vscode-editor-background);
   --fg: var(--vscode-foreground);

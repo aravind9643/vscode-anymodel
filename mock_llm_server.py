@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Custom LLM Router - Python Mock Server
+AnyModel - Python Mock Server
 A lightweight, zero-dependency OpenAI-compatible mock server for testing
 model discovery, streaming chat completions, reasoning deltas, and tool-calling.
 
@@ -492,7 +492,7 @@ def run_server(port=31415):
         pass
     server = ThreadingHTTPServer(("127.0.0.1", port), MockOpenAIHandler)
     print("=" * 60)
-    print(f"🚀 Custom LLM Router Mock Server running at http://127.0.0.1:{port}")
+    print(f"🚀 AnyModel Mock Server running at http://127.0.0.1:{port}")
     print(f"   - Discovery URL: http://127.0.0.1:{port}/v1/models")
     print(f"   - Chat URL:      http://127.0.0.1:{port}/v1/chat/completions")
     print("   - Press Ctrl+C to stop.")

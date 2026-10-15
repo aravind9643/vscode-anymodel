@@ -88,13 +88,13 @@ Under *Advanced* you can set:
 
 | Command | What it does |
 |---|---|
-| **LLM Router: Open Dashboard** | Models, providers, routes and settings |
-| **LLM Router: Add Provider** | Provider editor with presets |
-| **LLM Router: Refresh Models** | Re-fetches every provider's model list |
-| **LLM Router: Verify Untested Models** | Health-checks models without a fresh result (asks first for large remote runs) |
-| **LLM Router: Clear Verification Results** | Forgets results and re-checks the selected models |
-| **LLM Router: Export / Import Configuration…** | Providers, selection, routes and overrides (keys are never exported) |
-| **LLM Router: Show Logs** | Discovery, verification, route fallbacks and chat errors |
+| **AnyModel: Open Dashboard** | Models, providers, routes and settings |
+| **AnyModel: Add Provider** | Provider editor with presets |
+| **AnyModel: Refresh Models** | Re-fetches every provider's model list |
+| **AnyModel: Verify Untested Models** | Health-checks models without a fresh result (asks first for large remote runs) |
+| **AnyModel: Clear Verification Results** | Forgets results and re-checks the selected models |
+| **AnyModel: Export / Import Configuration…** | Providers, selection, routes and overrides (keys are never exported) |
+| **AnyModel: Show Logs** | Discovery, verification, route fallbacks and chat errors |
 
 Right-click a provider in the sidebar to set its API key, test it, re-test its models, pull an Ollama model, edit, enable or disable, or delete it. Right-click a model to re-test it or edit its limits.
 

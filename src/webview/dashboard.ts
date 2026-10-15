@@ -1,4 +1,4 @@
-/* LLM Router dashboard — bundled by esbuild into media/dashboard.js and loaded by DashboardPanel
+/* AnyModel dashboard — bundled by esbuild into media/dashboard.js and loaded by DashboardPanel
    under a strict nonce CSP. Rule: every dynamic value is rendered through esc(); no inline event handlers. */
 import type { DashboardState, HostMessage, WebviewMessage } from "../protocol";
 import type { StaticModelConfig } from "../types";
