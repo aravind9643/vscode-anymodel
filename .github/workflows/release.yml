@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (defaults to v<version> from package.json)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -25,8 +31,20 @@ jobs:
         run: npm test
       - name: Package VSIX
         run: npx @vscode/vsce package --no-dependencies
+      - name: Determine release tag
+        id: tag_info
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            PKG_VERSION=$(node -p "require('./package.json').version")
+            echo "tag=v${PKG_VERSION}" >> $GITHUB_OUTPUT
+          fi
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag_info.outputs.tag }}
           files: "*.vsix"
           generate_release_notes: true
