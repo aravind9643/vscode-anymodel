@@ -167,7 +167,11 @@ _Last updated: 2026-10-15._
   - Added jittered exponential backoff for rate limits and server errors.
   - Added dashboard Ctrl+F / Cmd+F search focusing, Esc search clearing, and provider card bulk selection buttons.
   - Added automatic `.bak` backup creation prior to modifying `chatLanguageModels.json`.
-- **Local verification at handoff**: `npm test` → 27 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
+  - Added Unicode-aware, collision-free `slug()` with deterministic hash fallback for non-Latin / emoji names.
+  - Added accurate context limits and output tokens for GPT-3.5-Turbo, legacy GPT-4, Gemma 1/2, Mistral-7B, Claude 3 Haiku, and o3-mini (100k).
+  - Expanded non-chat exclusion patterns (embeddings, rerankers, reward/judge, OCR, guard models).
+  - Added empty-message guard in `toOpenAIMessages()` and `0.0.0.0` loopback detection in `isLocalUrl()`.
+- **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
 - **CI**: green on **ubuntu-latest and windows-latest**.
 
 ### Suggested next steps

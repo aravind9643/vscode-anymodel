@@ -8,7 +8,7 @@ const vscode = installVscodeStub();
 const out = (m) => require(path.join(ROOT, "out", m));
 const { resolveChatUrl, resolveModelsUrl, nativeRoot, isLocalUrl, resolveApi } = out("endpoints.js");
 const { ProviderStore, SECRET_SENTINEL } = out("providerStore.js");
-const { ModelEngine, prettifyModelName, detectSubProvider } = out("modelEngine.js");
+const { ModelEngine, prettifyModelName, detectSubProvider, slug, inferBounds } = out("modelEngine.js");
 const { CustomLLMChatProvider, ThinkTagSplitter, stripReasoning } = out("customChatProvider.js");
 const { pullOllamaModel } = out("ollama.js");
 const { runPool } = out("pool.js");
@@ -80,7 +80,7 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(resolveChatUrl(u("https://res.openai.azure.com/openai/v1")), "https://res.openai.azure.com/openai/v1/chat/completions");
       assert.strictEqual(resolveModelsUrl({ name: "FreeLLMAPI", endpointUrl: "http://h" }), "http://h/v1/models?execution_status=ready");
       assert.strictEqual(nativeRoot(u("http://localhost:11434/v1/")), "http://localhost:11434");
-      assert.ok(isLocalUrl("http://192.168.1.4:8000") && isLocalUrl("http://[::1]:1") && !isLocalUrl("https://api.openai.com/v1"));
+      assert.ok(isLocalUrl("http://192.168.1.4:8000") && isLocalUrl("http://[::1]:1") && isLocalUrl("http://0.0.0.0:11434") && !isLocalUrl("https://api.openai.com/v1"));
       assert.strictEqual(resolveApi(u("https://api.anthropic.com"), "openai"), "anthropic");
       assert.strictEqual(resolveApi(u("http://localhost:11434"), "ollama"), "ollama");
       assert.strictEqual(resolveApi(u("http://localhost:11434", { api: "openai" }), "ollama"), "openai");
@@ -493,6 +493,22 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.ok(item.detail.includes("ctx"), "Detail includes context length");
       assert.ok(item.tooltip.includes("context"), "Tooltip includes context details");
       assert.strictEqual(item.family, "mock-server");
+    }],
+
+    ["slug Unicode support and inferBounds accuracy for legacy and reasoning models", () => {
+      assert.strictEqual(slug("智谱AI"), "智谱ai");
+      assert.strictEqual(slug("Café-LLM"), "café-llm");
+      assert.strictEqual(slug("🚀 Fast"), "fast");
+      assert.ok(slug("🚀").startsWith("p-"), "Pure emoji generates deterministic hash slug");
+
+      assert.strictEqual(inferBounds("gpt-3.5-turbo").contextWindow, 16385);
+      assert.strictEqual(inferBounds("gpt-4").contextWindow, 8192);
+      assert.strictEqual(inferBounds("gpt-4-32k").contextWindow, 32768);
+      assert.strictEqual(inferBounds("gemma-2-9b").contextWindow, 8192);
+      assert.strictEqual(inferBounds("mistral-7b-instruct").contextWindow, 32768);
+      assert.strictEqual(inferBounds("claude-3-haiku").maxOutputTokens, 4096);
+      assert.strictEqual(inferBounds("o3-mini").maxOutputTokens, 100000);
+      assert.strictEqual(inferBounds("gemini-2.5-pro").contextWindow, 2097152);
     }],
   ]);
 

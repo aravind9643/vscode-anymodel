@@ -40,7 +40,9 @@ const DEFAULT_CHARS_PER_TOKEN = 4;
 /** Non-chat models that should never be offered to Copilot. */
 const EXCLUDE_PATTERNS = [
   /image/, /inpaint/, /pixel-art/, /flux/, /diffusion/, /dall-?e/, /tts/, /voice/, /whisper/,
-  /transcri/, /translat/, /embed/, /rerank/, /moderation/, /safety/, /guard/,
+  /transcri/, /translat/, /embed/, /rerank/, /moderation/, /safety/, /guard/, /bge-/, /nomic-/,
+  /e5-/, /text-embedding/, /minilm/, /jina-rerank/, /-reward/, /-judge/, /armorm/, /got-ocr/,
+  /shieldgemma/,
 ];
 const ALWAYS_INCLUDE = new Set(["auto"]);
 
@@ -1083,7 +1085,14 @@ export function detectKind(p: ProviderConfig, raw: any[]): ProviderKind {
 }
 
 export function slug(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "x";
+  const normalized = (s || "").trim().toLowerCase();
+  // Keep letters and numbers across Unicode scripts (Latin, CJK, Cyrillic, etc.)
+  const clean = normalized.replace(/[^\p{L}\p{N}_-]+/gu, "-").replace(/^-+|-+$/g, "");
+  if (clean) return clean;
+  // If no letters/numbers remain (e.g. pure emojis or symbols), compute a deterministic hex hash
+  let h = 0;
+  for (let i = 0; i < normalized.length; i++) h = (h * 31 + normalized.charCodeAt(i)) >>> 0;
+  return `p-${h.toString(16).padStart(6, "0")}`;
 }
 
 export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxIn?: number) {
@@ -1094,17 +1103,26 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     else if (/claude/.test(idLower)) contextWindow = 200000;
     else if (/gpt-4\.1|gpt-5/.test(idLower)) contextWindow = 400000;
     else if (/(^|[\/\-])o[134]/.test(idLower)) contextWindow = 200000;
-    else if (/gpt-4o/.test(idLower)) contextWindow = 128000;
+    else if (/gpt-4o|gpt-4-turbo/.test(idLower)) contextWindow = 128000;
+    else if (/gpt-3\.5-turbo/.test(idLower)) contextWindow = 16385;
+    else if (/gpt-4-32k/.test(idLower)) contextWindow = 32768;
+    else if (/gpt-4/.test(idLower) && !/gpt-4o|gpt-4-turbo|gpt-4\.[1-9]/.test(idLower)) contextWindow = 8192;
     else if (/deepseek/.test(idLower)) contextWindow = 65536;
+    else if (/mistral-7b|mixtral-8x7b/.test(idLower)) contextWindow = 32768;
+    else if (/gemma-?[12]/.test(idLower)) contextWindow = 8192;
     else if (/llama-?3(\.0)?(-|$)/.test(idLower) && !/llama-?3\.[123]/.test(idLower)) contextWindow = 8192;
     else contextWindow = 131072;
   }
-  const defaultMax = /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower)
+  const defaultMax = /(^|[\/\-])o3-mini/.test(idLower)
+    ? 100000
+    : /claude-3-(haiku|opus)/.test(idLower)
+    ? 4096
+    : /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower)
     ? 64000
     : /(codestral|mistral-large)/.test(idLower)
     ? 32768
     : 16384;
-  const maxOutputTokens = Math.min(maxOut || Math.min(defaultMax, Math.max(2048, Math.floor(contextWindow / 4))), Math.floor(contextWindow / 2));
+  const maxOutputTokens = Math.min(maxOut || defaultMax, Math.floor(contextWindow / 2));
   const maxInputTokens = maxIn || Math.max(1024, contextWindow - maxOutputTokens);
   return { contextWindow, maxOutputTokens, maxInputTokens };
 }

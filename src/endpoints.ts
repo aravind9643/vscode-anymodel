@@ -49,6 +49,8 @@ export function isLocalUrl(url: string): boolean {
   }
   return (
     host === "localhost" ||
+    host === "0.0.0.0" ||
+    host === "::" ||
     host === "::1" ||
     host.endsWith(".local") ||
     /^127\./.test(host) ||

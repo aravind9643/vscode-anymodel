@@ -375,6 +375,9 @@ function toOpenAIMessages(messages: readonly vscode.LanguageModelChatRequestMess
     }
     if (entry && hasCacheControl) entry.cache_control = true;
   }
+  if (!out.length || !out.some((m) => m.role === "user" || m.role === "tool")) {
+    out.push({ role: "user", content: "Hello" });
+  }
   return out;
 }
 
