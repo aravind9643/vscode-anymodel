@@ -181,8 +181,9 @@ _Last updated: 2026-10-15._
   - Merged Pull Request #1 into `main`, bringing all v2 features, branding, and stability fixes to the default branch.
   - Added automated GitHub release workflow (`.github/workflows/release.yml`) with `workflow_dispatch` and tag trigger.
   - Successfully published Release [v1.0.0](https://github.com/aravind9643/vscode-anymodel/releases/tag/v1.0.0) with packaged `vscode-anymodel-1.0.0.vsix` asset.
+  - Renamed configuration section from `customLlmRouter.*` to `anyModel.*` across the manifest, code, tests, and documentation with legacy secret fallback support.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI & Release**: all green on **main** (CI run 38738940226, Release run 38739559561).
+- **CI & Release**: all green on **main** (CI run 38742774818).
 
 ### Suggested next steps
 1. Marketplace publishing: configure VS Code Marketplace publisher token (`vsce publish`).
