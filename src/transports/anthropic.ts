@@ -193,7 +193,8 @@ export function toAnthropicMessages(input: WireMessage[]): { system?: string; me
       push("user", blocks);
     }
   }
-  // The API requires the conversation to start with a user turn.
+  // The API requires the conversation to start with a user turn and have at least one message.
   if (out[0]?.role === "assistant") out.unshift({ role: "user", content: [{ type: "text", text: "(continued)" }] });
+  if (!out.length) out.push({ role: "user", content: [{ type: "text", text: "Hello" }] });
   return { system: system.join("\n\n") || undefined, messages: out };
 }

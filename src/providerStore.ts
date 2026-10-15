@@ -234,6 +234,7 @@ export class ProviderStore {
     if (Number(override?.maxOutputTokens) > 0) clean.maxOutputTokens = Math.round(Number(override!.maxOutputTokens));
     if (typeof override?.toolCalling === "boolean") clean.toolCalling = override.toolCalling;
     if (typeof override?.vision === "boolean") clean.vision = override.vision;
+    if (typeof override?.reasoning === "boolean") clean.reasoning = override.reasoning;
     for (const k of ["inputPerM", "outputPerM"] as const) {
       const v = Number(override?.[k]);
       if (override?.[k] !== undefined && Number.isFinite(v) && v >= 0) clean[k] = v;

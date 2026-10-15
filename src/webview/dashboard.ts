@@ -729,6 +729,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <label class="lim-field">$ / M output<input type="number" min="0" step="0.01" data-lim="outputPerM" value="${esc(ov.outputPerM ?? "")}" placeholder="${m.pricing ? m.pricing.outputPerM : "—"}"></label>
         ${tri("toolCalling", "Tools")}
         ${tri("vision", "Images")}
+        ${tri("reasoning", "Reasoning")}
         <div class="lim-actions">
           <button class="btn small primary" data-action="save-limits" data-key="${esc(m.key)}">Save</button>
           ${S.overrides[m.key] ? `<button class="btn small" data-action="reset-limits" data-key="${esc(m.key)}">Reset</button>` : ""}
@@ -1287,7 +1288,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         const field = input.dataset.lim || "";
         const v = input.value.trim();
         if (!v || v === "auto") return;
-        if (field === "toolCalling" || field === "vision") ov[field] = v === "on";
+        if (field === "toolCalling" || field === "vision" || field === "reasoning") ov[field] = v === "on";
         else if (field === "name") ov.name = v;
         else if (field === "inputPerM" || field === "outputPerM") {
           if (Number(v) >= 0) ov[field] = Number(v);

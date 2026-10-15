@@ -3,7 +3,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { ModelEngine, slug } from "./modelEngine";
 import { ProviderStore } from "./providerStore";
-import { resolveChatUrl, resolveApi } from "./endpoints";
+import { resolveChatUrl, resolveAnthropicChatUrl, resolveApi } from "./endpoints";
 import { ProviderConfig } from "./types";
 
 export interface ChatLMModelEntry {
@@ -121,7 +121,7 @@ export async function buildChatLanguageModelsExport(
     const status = engine.getProviderStatuses().find((s) => s.name === p.name);
     const api = status?.api ?? resolveApi(p, status?.kind || "openai");
     const apiType: "chat-completions" | "messages" = api === "anthropic" ? "messages" : "chat-completions";
-    const chatUrl = api === "anthropic" ? "https://api.anthropic.com/v1/messages" : resolveChatUrl(p);
+    const chatUrl = api === "anthropic" ? resolveAnthropicChatUrl(p) : resolveChatUrl(p);
 
     const modelEntries: ChatLMModelEntry[] = providerModels.map((m) => {
       const sub = m.subProvider && m.subProvider.toLowerCase() !== p.name.toLowerCase() ? m.subProvider : undefined;

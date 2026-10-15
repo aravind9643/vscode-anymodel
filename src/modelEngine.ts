@@ -46,9 +46,9 @@ const EXCLUDE_PATTERNS = [
 ];
 const ALWAYS_INCLUDE = new Set(["auto"]);
 
-const CODING_RE = /(coder|coding|code|codestral|devstral|starcoder|codellama|claude|gpt-4|gpt-5|deepseek|qwen|kimi|glm|phi-4|magicoder)/i;
-const REASONING_RE = /(reason|thinking|think|deepseek-r1|(^|[\/\-_:])r1([\-_:.]|$)|(^|[\/\-_:])o[134](-|$)|qwq|magistral|marco-o1|skywork-o1)/i;
-const VISION_RE = /(vision|(^|[\-_:])vl([\-_:]|$)|gpt-4o|gpt-4\.1|gpt-5|gemini|claude-3|claude-(sonnet|opus)|llava|pixtral|minicpm-v|llama-3\.2.*vision|gemma-?3)/i;
+const CODING_RE = /(coder|coding|code|codestral|devstral|starcoder|codellama|claude|gpt-4|gpt-5|deepseek|qwen|kimi|glm|phi-4|magicoder|(^|[\/\-_:])o[134]([\-_:.]|$))/i;
+const REASONING_RE = /(reason|thinking|think|deepseek-r1|(^|[\/\-_:])r1([\-_:.]|$)|(^|[\/\-_:])o[134](-|$)|qwq|magistral|marco-o1|skywork-o1|kimi-k1\.5)/i;
+const VISION_RE = /(vision|multimodal|molmo|internvl|(^|[\-_:])vl([\-_:]|$)|(^|[\/\-_:])4v([\-_:]|$)|gpt-4o|gpt-4\.1|gpt-5|gemini|claude-3|claude-(sonnet|opus)|llava|pixtral|minicpm-v|llama-3\.2.*vision|gemma-?3)/i;
 
 /** Limits and capabilities reported by a server's native API (Ollama / LM Studio). */
 interface NativeMeta {
@@ -776,6 +776,7 @@ export class ModelEngine implements vscode.Disposable {
     else if (m.toolSupport) m.caps.tools = true;
     if (ov && typeof ov.toolCalling === "boolean") m.caps.tools = ov.toolCalling;
     if (ov && typeof ov.vision === "boolean") m.caps.vision = ov.vision;
+    if (ov && typeof ov.reasoning === "boolean") m.caps.reasoning = ov.reasoning;
     m.selected = selection.has(m.key);
     m.stats = this._stats.get(m.key);
   }
@@ -1107,6 +1108,7 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     else if (/gpt-3\.5-turbo/.test(idLower)) contextWindow = 16385;
     else if (/gpt-4-32k/.test(idLower)) contextWindow = 32768;
     else if (/gpt-4/.test(idLower) && !/gpt-4o|gpt-4-turbo|gpt-4\.[1-9]/.test(idLower)) contextWindow = 8192;
+    else if (/deepseek-?(v3|r1|chat|reasoner)/.test(idLower)) contextWindow = 131072;
     else if (/deepseek/.test(idLower)) contextWindow = 65536;
     else if (/mistral-7b|mixtral-8x7b/.test(idLower)) contextWindow = 32768;
     else if (/gemma-?[12]/.test(idLower)) contextWindow = 8192;
@@ -1117,7 +1119,7 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     ? 100000
     : /claude-3-(haiku|opus)/.test(idLower)
     ? 4096
-    : /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower)
+    : /claude-3-[57]|(^|[\/\-])o[134]|deepseek-?(r1|reasoner)/.test(idLower)
     ? 64000
     : /(codestral|mistral-large)/.test(idLower)
     ? 32768
@@ -1192,7 +1194,7 @@ export function detectSubProvider(id: string, metaOwnedBy?: string): string | un
   let cleanId = id.trim();
 
   // Strip routing wrapper prefixes
-  cleanId = cleanId.replace(/^(no-think|direct|stream|raw)\//i, "");
+  cleanId = cleanId.replace(/^(no-think|direct|stream|raw|models)\//i, "");
 
   if (cleanId === "auto" || cleanId.startsWith("auto/")) {
     return "OmniRoute Auto";

@@ -314,7 +314,7 @@ function sanitizeProvider(raw: any): ProviderConfig {
         const sm: Record<string, unknown> = { id: m.id.trim() };
         if (m.name) sm.name = String(m.name);
         for (const k of ["contextWindow", "maxInputTokens", "maxOutputTokens"]) if (Number(m[k]) > 0) sm[k] = Number(m[k]);
-        for (const k of ["toolCalling", "vision"]) if (typeof m[k] === "boolean") sm[k] = m[k];
+        for (const k of ["toolCalling", "vision", "reasoning"]) if (typeof m[k] === "boolean") sm[k] = m[k];
         return sm;
       });
     if (list.length) p.staticModels = list;

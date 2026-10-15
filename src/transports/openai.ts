@@ -55,6 +55,10 @@ export const openaiTransport: Transport = {
         delete body.temperature;
         retried = true;
       }
+      if (body.top_p !== undefined && /top_p/i.test(text)) {
+        delete body.top_p;
+        retried = true;
+      }
       if (body.max_tokens !== undefined && /max_completion_tokens/i.test(text)) {
         body.max_completion_tokens = body.max_tokens;
         delete body.max_tokens;
@@ -97,10 +101,11 @@ function toListedModel(r: any): ListedModel | undefined {
     id,
     name: typeof r.name === "string" ? r.name : undefined,
     contextWindow: num(r.context_window ?? r.contextWindow ?? r.context_length ?? r.max_model_len ?? r.max_context_length),
-    maxOutputTokens: num(r.max_output_tokens ?? r.maxOutputTokens ?? r.top_provider?.max_completion_tokens),
+    maxOutputTokens: num(r.max_output_tokens ?? r.maxOutputTokens ?? r.top_provider?.max_completion_tokens ?? r.max_completion_tokens),
     maxInputTokens: num(r.maxInputTokens),
     toolCalling: typeof r.toolCalling === "boolean" ? r.toolCalling : Array.isArray(r.supported_parameters) ? r.supported_parameters.includes("tools") : undefined,
     vision: Boolean(r.vision || r.supports_vision || r.architecture?.input_modalities?.includes?.("image")) || undefined,
+    reasoning: Boolean(r.reasoning || r.supports_reasoning || r.architecture?.output_modalities?.includes?.("reasoning")) || undefined,
     inputPerM: promptPerM,
     outputPerM: completionPerM,
     ownedBy: typeof r.owned_by === "string" ? r.owned_by : undefined,

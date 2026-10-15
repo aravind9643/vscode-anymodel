@@ -85,6 +85,7 @@ function safeJson(s: string): object {
 
 /** OpenAI-style messages → Ollama: images as bare base64, tool arguments as objects. */
 export function toOllamaMessages(messages: WireMessage[]): any[] {
+  if (!messages.length) return [{ role: "user", content: "Hello" }];
   const toolNames = new Map<string, string>();
   return messages.map((m) => {
     const parts: WirePart[] = typeof m.content === "string" ? [{ type: "text", text: m.content }] : m.content || [];

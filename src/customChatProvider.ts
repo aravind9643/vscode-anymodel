@@ -393,6 +393,7 @@ function toolResultText(part: vscode.LanguageModelToolResultPart): string {
 
 /** Removes the rendered reasoning block from earlier assistant turns so it is not re-sent as context. */
 export function stripReasoning(text: string): string {
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   if (!text.includes(REASONING_MARKER)) return text;
   const lines = text.split("\n");
   const kept: string[] = [];
@@ -504,7 +505,7 @@ function registrationId(m: CatalogModel) {
 function modelFamily(m: CatalogModel): string {
   const l = m.id.toLowerCase();
   if (l.includes("claude")) return "claude";
-  if (l.includes("gpt-4") || l.includes("gpt-5") || l.includes("o1") || l.includes("o3") || l.includes("o4")) return "gpt-4";
+  if (l.includes("gpt-") || l.includes("chatgpt") || /(^|[\/\-_:])o[134]([\-_:.]|$)/.test(l)) return "gpt-4";
   if (l.includes("deepseek")) return "deepseek";
   if (l.includes("gemini")) return "gemini";
   if (l.includes("qwen")) return "qwen";

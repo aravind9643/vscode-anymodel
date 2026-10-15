@@ -168,9 +168,16 @@ _Last updated: 2026-10-15._
   - Added dashboard Ctrl+F / Cmd+F search focusing, Esc search clearing, and provider card bulk selection buttons.
   - Added automatic `.bak` backup creation prior to modifying `chatLanguageModels.json`.
   - Added Unicode-aware, collision-free `slug()` with deterministic hash fallback for non-Latin / emoji names.
-  - Added accurate context limits and output tokens for GPT-3.5-Turbo, legacy GPT-4, Gemma 1/2, Mistral-7B, Claude 3 Haiku, and o3-mini (100k).
+  - Added accurate context limits and output tokens for GPT-3.5-Turbo, legacy GPT-4, Gemma 1/2, Mistral-7B, Claude 3 Haiku, o3-mini (100k), and DeepSeek-V3/R1 (128k ctx, 64k out).
   - Expanded non-chat exclusion patterns (embeddings, rerankers, reward/judge, OCR, guard models).
-  - Added empty-message guard in `toOpenAIMessages()` and `0.0.0.0` loopback detection in `isLocalUrl()`.
+  - Added empty-message guards in `toOpenAIMessages()`, `toOllamaMessages()`, and `toAnthropicMessages()` to prevent upstream HTTP 400 Bad Request errors.
+  - Added `0.0.0.0` loopback detection in `isLocalUrl()`.
+  - Added full reasoning capability tri-state override in dashboard limits editor and static model configurations.
+  - Expanded model capability regexes (`CODING_RE` for o1/o3/o4, `VISION_RE` for multimodal/molmo/internvl/4v, `REASONING_RE` for kimi-k1.5).
+  - Enhanced OpenAI transport with `top_p` 400 retry recovery and reasoning capability extraction in `toListedModel`.
+  - Added `resolveAnthropicChatUrl()` supporting custom proxy endpoints for `chatLanguageModels.json` export and sync.
+  - Added sub-provider prefix stripping for Google Gemini (`models/` prefix) in `detectSubProvider()`.
+  - Added raw `<think>` tag stripping in `stripReasoning()` to protect history turns.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
 - **CI**: green on **ubuntu-latest and windows-latest**.
 

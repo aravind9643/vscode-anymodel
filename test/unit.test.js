@@ -6,7 +6,7 @@ const { ROOT, config, installVscodeStub, startMockServer, memento, secretStorage
 
 const vscode = installVscodeStub();
 const out = (m) => require(path.join(ROOT, "out", m));
-const { resolveChatUrl, resolveModelsUrl, nativeRoot, isLocalUrl, resolveApi } = out("endpoints.js");
+const { resolveChatUrl, resolveAnthropicChatUrl, resolveModelsUrl, nativeRoot, isLocalUrl, resolveApi } = out("endpoints.js");
 const { ProviderStore, SECRET_SENTINEL } = out("providerStore.js");
 const { ModelEngine, prettifyModelName, detectSubProvider, slug, inferBounds } = out("modelEngine.js");
 const { CustomLLMChatProvider, ThinkTagSplitter, stripReasoning } = out("customChatProvider.js");
@@ -92,6 +92,7 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(segs.filter((s) => s.think).map((s) => s.text).join(""), "ab");
       assert.strictEqual(segs.filter((s) => !s.think).map((s) => s.text).join(""), "c<x");
       assert.strictEqual(stripReasoning("> \u{1F4AD} *Thinking…*\n> step 1\n\nAnswer here"), "Answer here");
+      assert.strictEqual(stripReasoning("<think>internal thought chain</think>\nActual response"), "Actual response");
     }],
 
     ["message conversion for Anthropic and Ollama", () => {
@@ -113,6 +114,14 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.deepStrictEqual(o[2].images, ["QUJD"]);
       assert.deepStrictEqual(o[3].tool_calls[0].function.arguments, { a: 1 });
       assert.strictEqual(o[4].tool_name, "f");
+
+      // Empty message safety
+      const emptyO = toOllamaMessages([]);
+      assert.strictEqual(emptyO.length, 1);
+      assert.strictEqual(emptyO[0].role, "user");
+      const emptyA = toAnthropicMessages([]);
+      assert.strictEqual(emptyA.messages.length, 1);
+      assert.strictEqual(emptyA.messages[0].role, "user");
     }],
 
     ["worker pool respects global and per-provider limits", async () => {
@@ -509,6 +518,18 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(inferBounds("claude-3-haiku").maxOutputTokens, 4096);
       assert.strictEqual(inferBounds("o3-mini").maxOutputTokens, 100000);
       assert.strictEqual(inferBounds("gemini-2.5-pro").contextWindow, 2097152);
+      assert.strictEqual(inferBounds("deepseek-v3").contextWindow, 131072);
+      assert.strictEqual(inferBounds("deepseek-r1").contextWindow, 131072);
+      assert.strictEqual(inferBounds("deepseek-r1").maxOutputTokens, 64000);
+
+      // detectSubProvider prefix stripping
+      assert.strictEqual(detectSubProvider("models/gemini-1.5-pro"), "Google");
+      assert.strictEqual(detectSubProvider("deepseek/deepseek-r1"), "DeepSeek");
+
+      // resolveAnthropicChatUrl
+      assert.strictEqual(resolveAnthropicChatUrl({ name: "A", endpointUrl: "https://api.anthropic.com" }), "https://api.anthropic.com/v1/messages");
+      assert.strictEqual(resolveAnthropicChatUrl({ name: "B", endpointUrl: "https://my-proxy.com/anthropic" }), "https://my-proxy.com/anthropic/v1/messages");
+      assert.strictEqual(resolveAnthropicChatUrl({ name: "C", endpointUrl: "https://my-proxy.com", chatEndpoint: "https://custom.com/msg" }), "https://custom.com/msg");
     }],
   ]);
 

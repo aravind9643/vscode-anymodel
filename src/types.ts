@@ -6,6 +6,7 @@ export interface StaticModelConfig {
   maxOutputTokens?: number;
   toolCalling?: boolean;
   vision?: boolean;
+  reasoning?: boolean;
 }
 
 /** Provider entry as persisted in `customLlmRouter.providers`. */
@@ -40,6 +41,7 @@ export interface ModelOverride {
   maxOutputTokens?: number;
   toolCalling?: boolean;
   vision?: boolean;
+  reasoning?: boolean;
   /** USD per million tokens. */
   inputPerM?: number;
   outputPerM?: number;

@@ -18,13 +18,18 @@ function hasVersionSegment(base: string): boolean {
   return /\/(v\d+[a-z0-9]*|openai)$/i.test(base);
 }
 
-function apiRoot(base: string): string {
+export function apiRoot(base: string): string {
   return hasVersionSegment(base) ? base : `${base}/v1`;
 }
 
 export function resolveChatUrl(p: ProviderConfig): string {
   if (p.chatEndpoint && p.chatEndpoint.trim()) return p.chatEndpoint.trim();
   return `${apiRoot(normalizeBaseUrl(p.endpointUrl))}/chat/completions`;
+}
+
+export function resolveAnthropicChatUrl(p: ProviderConfig): string {
+  if (p.chatEndpoint && p.chatEndpoint.trim()) return p.chatEndpoint.trim();
+  return `${apiRoot(normalizeBaseUrl(p.endpointUrl))}/messages`;
 }
 
 export function resolveModelsUrl(p: ProviderConfig): string {

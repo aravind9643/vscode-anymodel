@@ -493,6 +493,9 @@
                     },
                     "vision": {
                       "type": "boolean"
+                    },
+                    "reasoning": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -588,6 +591,9 @@
                 "type": "boolean"
               },
               "vision": {
+                "type": "boolean"
+              },
+              "reasoning": {
                 "type": "boolean"
               },
               "inputPerM": {
