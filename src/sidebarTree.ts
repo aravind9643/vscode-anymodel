@@ -134,6 +134,7 @@ export class RouterTreeProvider implements vscode.TreeDataProvider<RouterNode>, 
     const md = new vscode.MarkdownString(undefined, true);
     md.appendMarkdown(`**${escapeMd(s.name)}**\n\n`);
     md.appendMarkdown(`$(link) \`${s.endpointUrl}\`\n\n`);
+    md.appendMarkdown(`$(server) Protocol: \`${s.api || s.kind || "openai"}\`\n\n`);
     if (s.online) md.appendMarkdown(`$(pass) Online · ${s.latencyMs ?? "?"}ms · ${s.modelCount} models\n\n`);
     if (s.error) md.appendMarkdown(`$(error) ${escapeMd(s.error)}\n\n`);
     md.appendMarkdown(
@@ -177,6 +178,15 @@ export class RouterTreeProvider implements vscode.TreeDataProvider<RouterNode>, 
     const md = new vscode.MarkdownString(undefined, true);
     const subNote = m.subProvider && m.subProvider.toLowerCase() !== m.providerName.toLowerCase() ? ` · *${escapeMd(m.subProvider)}*` : "";
     md.appendMarkdown(`**${escapeMd(m.name)}**  \n\`${m.id}\`${subNote}\n\n`);
+    const capBadges = [
+      m.caps.coding && "$(code) Coding",
+      m.caps.reasoning && "$(lightbulb) Reasoning",
+      m.caps.vision && "$(eye) Vision",
+      m.caps.tools && "$(tools) Tools",
+    ].filter(Boolean);
+    if (capBadges.length) {
+      md.appendMarkdown(`$(sparkle) Capabilities: ${capBadges.join(" · ")}\n\n`);
+    }
     const ctxSource = m.contextSource === "server" ? "reported by server" : m.contextSource === "override" ? "your override" : "estimated";
     md.appendMarkdown(`Context ${Math.round(m.contextWindow / 1000)}k (${ctxSource}) · max output ${Math.round(m.maxOutputTokens / 1000)}k\n\n`);
     const tools = m.toolSupport === "called" ? "calls tools" : m.toolSupport === "accepted" ? "accepts tools but did not call one" : m.toolSupport === "unsupported" ? "no tool calling" : "tools not checked";

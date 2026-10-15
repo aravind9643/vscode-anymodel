@@ -1109,6 +1109,7 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     if (/gemini.*(2\.[05]|pro)/.test(idLower)) contextWindow = 2097152;
     else if (/gemini/.test(idLower)) contextWindow = 1048576;
     else if (/claude/.test(idLower)) contextWindow = 200000;
+    else if (/gpt-4\.5/.test(idLower)) contextWindow = 128000;
     else if (/gpt-4\.1|gpt-5/.test(idLower)) contextWindow = 400000;
     else if (/(^|[\/\-])o[134]/.test(idLower)) contextWindow = 200000;
     else if (/gpt-4o|gpt-4-turbo/.test(idLower)) contextWindow = 128000;
@@ -1117,6 +1118,7 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     else if (/gpt-4/.test(idLower) && !/gpt-4o|gpt-4-turbo|gpt-4\.[1-9]/.test(idLower)) contextWindow = 8192;
     else if (/deepseek-?(v3|r1|chat|reasoner)/.test(idLower)) contextWindow = 131072;
     else if (/deepseek/.test(idLower)) contextWindow = 65536;
+    else if (/qwen.*coder/.test(idLower)) contextWindow = 131072;
     else if (/mistral-7b|mixtral-8x7b/.test(idLower)) contextWindow = 32768;
     else if (/gemma-?[12]/.test(idLower)) contextWindow = 8192;
     else if (/llama-?3(\.0)?(-|$)/.test(idLower) && !/llama-?3\.[123]/.test(idLower)) contextWindow = 8192;
@@ -1128,6 +1130,8 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     ? 4096
     : /claude-3-[57]|(^|[\/\-])o[134]|deepseek-?(r1|reasoner)/.test(idLower)
     ? 64000
+    : /gpt-4\.5/.test(idLower)
+    ? 16384
     : /(codestral|mistral-large)/.test(idLower)
     ? 32768
     : 16384;
@@ -1167,6 +1171,7 @@ const SUB_PROVIDER_MAP: Record<string, string> = {
   lepton: "Lepton AI",
   nebius: "Nebius AI",
   sambanova: "SambaNova",
+  siliconflow: "SiliconFlow",
   ai21: "AI21 Labs",
   perplexity: "Perplexity",
   upstage: "Upstage",

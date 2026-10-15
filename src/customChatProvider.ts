@@ -201,14 +201,28 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
     const tracked = new TrackingProgress(progress);
     const out = new ReasoningWriter(tracked, this._engine.store.showReasoning);
     const thinkTags = new ThinkTagSplitter();
+    const STREAM_IDLE_TIMEOUT_MS = 60000;
+    let idleTimer: NodeJS.Timeout | undefined;
+    const resetIdleTimer = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        abort.abort(new Error("Stream idle timeout: no data received from server for 60 seconds"));
+      }, STREAM_IDLE_TIMEOUT_MS);
+    };
+
     // Tool calls are reported after the text so Copilot shows the explanation first.
     const calls: vscode.LanguageModelToolCallPart[] = [];
     const sink: ChatSink = {
       text: (chunk) => {
+        resetIdleTimer();
         for (const seg of thinkTags.push(chunk)) seg.think ? out.reasoning(seg.text) : out.text(seg.text);
       },
-      reasoning: (chunk) => out.reasoning(chunk),
+      reasoning: (chunk) => {
+        resetIdleTimer();
+        out.reasoning(chunk);
+      },
       toolCall: (id, name, input) => {
+        resetIdleTimer();
         if (!name) return;
         tracked.markStarted();
         calls.push(new vscode.LanguageModelToolCallPart(id, name, input));
@@ -216,6 +230,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
     };
 
     try {
+      resetIdleTimer();
       const transport = transportFor(api);
       let result;
       try {
@@ -227,6 +242,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
         const jittered = Math.min(Math.round(baseDelay * (0.85 + Math.random() * 0.3)), 8000);
         await new Promise((r) => setTimeout(r, jittered));
         if (token.isCancellationRequested) return;
+        resetIdleTimer();
         result = await transport.chat(provider, auth, req, sink, abort.signal);
       }
       if (token.isCancellationRequested) return;
@@ -266,6 +282,7 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       const detail = err?.message && !/fetch failed|aborted|timeout/i.test(err.message) ? err.message : describeFetchError(err);
       throw new Retry(err?.message?.startsWith("Claude declined") || err?.message?.startsWith("Provider error") || err?.message?.startsWith("Ollama error") ? detail : `Connection to ${model.providerName} failed: ${detail}`);
     } finally {
+      if (idleTimer) clearTimeout(idleTimer);
       cancelSub.dispose();
     }
   }

@@ -521,10 +521,14 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(inferBounds("deepseek-v3").contextWindow, 131072);
       assert.strictEqual(inferBounds("deepseek-r1").contextWindow, 131072);
       assert.strictEqual(inferBounds("deepseek-r1").maxOutputTokens, 64000);
+      assert.strictEqual(inferBounds("gpt-4.5-preview").contextWindow, 128000);
+      assert.strictEqual(inferBounds("gpt-4.5-preview").maxOutputTokens, 16384);
+      assert.strictEqual(inferBounds("qwen2.5-coder-32b-instruct").contextWindow, 131072);
 
-      // detectSubProvider prefix stripping
+      // detectSubProvider prefix stripping & sub-providers
       assert.strictEqual(detectSubProvider("models/gemini-1.5-pro"), "Google");
       assert.strictEqual(detectSubProvider("deepseek/deepseek-r1"), "DeepSeek");
+      assert.strictEqual(detectSubProvider("siliconflow/deepseek-ai/DeepSeek-V3"), "SiliconFlow");
 
       // resolveAnthropicChatUrl
       assert.strictEqual(resolveAnthropicChatUrl({ name: "A", endpointUrl: "https://api.anthropic.com" }), "https://api.anthropic.com/v1/messages");

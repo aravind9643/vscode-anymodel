@@ -30,6 +30,14 @@ const LIST_PRICES: Record<string, [number, number]> = {
 const FALLBACK_MODELS = new Set(["claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"]);
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
+function lookupPrice(id: string): [number, number] | undefined {
+  if (LIST_PRICES[id]) return LIST_PRICES[id];
+  for (const [prefix, price] of Object.entries(LIST_PRICES)) {
+    if (id.startsWith(prefix)) return price;
+  }
+  return undefined;
+}
+
 function client(p: ProviderConfig, auth: Auth, timeoutMs: number): Anthropic {
   // The SDK appends /v1/... itself.
   const baseURL = normalizeBaseUrl(p.endpointUrl).replace(/\/v1$/i, "");
@@ -62,7 +70,7 @@ export const anthropicTransport: Transport = {
       const models = [];
       for await (const m of client(p, auth, timeoutMs).models.list({ limit: 100 })) {
         const caps: any = m.capabilities;
-        const price = LIST_PRICES[m.id];
+        const price = lookupPrice(m.id);
         models.push({
           id: m.id,
           name: m.display_name,

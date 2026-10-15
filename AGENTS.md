@@ -182,11 +182,16 @@ _Last updated: 2026-10-15._
   - Added automated GitHub release workflow (`.github/workflows/release.yml`) with `workflow_dispatch` and tag trigger.
   - Successfully published Release [v1.0.0](https://github.com/aravind9643/vscode-anymodel/releases/tag/v1.0.0) with packaged `vscode-anymodel-1.0.0.vsix` asset.
   - Renamed configuration section from `customLlmRouter.*` to `anyModel.*` across the manifest, code, tests, and documentation with legacy secret fallback support.
+  - Added new provider presets: **SiliconFlow**, **Fireworks AI**, **Cohere**, and **Cloudflare Workers AI**.
+  - Modern model heuristic bounds and pricing: accurate context limits for GPT-4.5 Preview (128k ctx, 16k out), Qwen 2.5 Coder (131k ctx), and prefix-aware Anthropic list price matching for date-stamped models (e.g. Claude 3.7 Sonnet).
+  - Stream idle watchdog: 60-second idle-chunk timer on SSE streaming in `customChatProvider.ts` to prevent indefinite Copilot hangs if an upstream connection stalls.
+  - Sidebar tree tooltip enrichment: added protocol indicator to provider items and capability badges with icons (`$(code)`, `$(lightbulb)`, `$(eye)`, `$(tools)`) to model items.
+  - Added optional automated VS Code Marketplace publishing step to `.github/workflows/release.yml` using `secrets.VSCE_PAT`.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI & Release**: all green on **main** (CI run 38742774818).
+- **CI & Release**: all green on **main** (CI run 38742774818); manually published to VS Code Marketplace; releases v1.0.0 and v1.0.1 published on GitHub Releases.
 
 ### Suggested next steps
-1. Marketplace publishing: configure VS Code Marketplace publisher token (`vsce publish`).
+1. Marketplace publishing: configure `secrets.VSCE_PAT` in GitHub repo settings to enable fully automated marketplace publishing on every release tag.
 2. Manual smoke test against live Ollama / OpenRouter / Anthropic keys.
 4. Backlog ideas not implemented:
    - VS Code's native thinking part (`LanguageModelThinkingPart`) once it leaves proposed API — today reasoning is a quoted block stripped from history (`stripReasoning`).
