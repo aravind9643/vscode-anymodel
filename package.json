@@ -1,5 +1,5 @@
 {
-  "name": "vscode-custom-llm-router",
+  "name": "vscode-anymodel",
   "displayName": "%displayName%",
   "description": "%description%",
   "version": "1.0.0",
@@ -25,12 +25,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/AravindMerugu/vscode-custom-llm-router.git"
+    "url": "https://github.com/aravind9643/vscode-anymodel.git"
   },
   "bugs": {
-    "url": "https://github.com/AravindMerugu/vscode-custom-llm-router/issues"
+    "url": "https://github.com/aravind9643/vscode-anymodel/issues"
   },
-  "homepage": "https://github.com/AravindMerugu/vscode-custom-llm-router#readme",
+  "homepage": "https://github.com/aravind9643/vscode-anymodel#readme",
   "engines": {
     "vscode": "^1.140.0"
   },
@@ -690,7 +690,7 @@
     "test": "npm run typecheck && npm run compile && npm run bundle:webview && node test/unit.test.js && node test/tree.test.js && node test/dashboard.test.js",
     "test:integration": "npm run compile && npm run bundle && vscode-test",
     "package": "vsce package --no-dependencies",
-    "install:insiders": "npm run package && code-insiders --install-extension vscode-custom-llm-router-1.0.0.vsix --force",
+    "install:insiders": "npm run package && code-insiders --install-extension vscode-anymodel-1.0.0.vsix --force",
     "l10n:export": "vscode-l10n-dev export -o ./l10n ./src",
     "typecheck": "tsc -p ./ --noEmit && tsc -p tsconfig.webview.json",
     "bundle:ext": "esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --outfile=dist/extension.js --minify --sourcemap",
@@ -721,5 +721,5 @@
     "theme": "dark"
   },
   "pricing": "Free",
-  "qna": "https://github.com/AravindMerugu/vscode-custom-llm-router/issues"
+  "qna": "https://github.com/aravind9643/vscode-anymodel/issues"
 }

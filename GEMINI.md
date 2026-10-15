@@ -1,9 +1,9 @@
-# AGENTS.md - Agent Context & Guidelines for vscode-custom-llm-router
+# AGENTS.md - Agent Context & Guidelines for vscode-anymodel
 
 > Single source of truth for coding agents. `CLAUDE.md` imports this file; `GEMINI.md` is a verbatim copy (re-copy after editing: `cp AGENTS.md GEMINI.md`). Start with **§7 Current State & Handoff**.
 
 ## 1. Project Overview
-**AnyModel** (`vscode-custom-llm-router`) is a VS Code extension that lets developers use custom, local, and third-party LLMs inside **GitHub Copilot Chat** through VS Code's native Language Model API (`vscode.lm.registerLanguageModelChatProvider`).
+**AnyModel** (`vscode-anymodel`) is a VS Code extension that lets developers use custom, local, and third-party LLMs inside **GitHub Copilot Chat** through VS Code's native Language Model API (`vscode.lm.registerLanguageModelChatProvider`).
 
 Supported backends include:
 - Local engines: **Ollama**, **LM Studio**, **vLLM**, **LocalAI**
@@ -36,7 +36,7 @@ Supported backends include:
 
 ## 3. Directory & File Architecture
 ```
-vscode-custom-llm-router/
+vscode-anymodel/
 ├── src/
 │   ├── extension.ts           # Wiring only: activation, commands, status bar, config-change routing
 │   ├── types.ts               # Shared types (ProviderConfig, CatalogModel, ProviderStatus, cache entries)
@@ -136,7 +136,7 @@ npx @vscode/vsce package --no-dependencies
    - Render every dynamic value through `esc()` — model names/IDs come from remote servers.
    - No inline `onclick` handlers (blocked by the CSP); use `data-action` + the delegated listeners.
    - Use `var(--vscode-*)` colors only so light/high-contrast themes work.
-3. **Workspace Boundary**: only edit files within `vscode-custom-llm-router`.
+3. **Workspace Boundary**: only edit files within `vscode-anymodel` (the workspace root).
 4. **URL Path Construction**: always go through `resolveChatUrl` / `resolveModelsUrl` in `endpoints.ts`; never concatenate `/v1/...` by hand.
 5. **Copilot Registration Integrity**: never register failed, untested or unselected models; respect `getCopilotModels()`.
 6. **Network**: every `fetch` needs a timeout or abort signal; never block activation on network calls; release SSE readers (`reader.cancel()`) when done.
