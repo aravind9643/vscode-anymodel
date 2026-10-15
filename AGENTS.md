@@ -187,8 +187,12 @@ _Last updated: 2026-10-15._
   - Stream idle watchdog: 60-second idle-chunk timer on SSE streaming in `customChatProvider.ts` to prevent indefinite Copilot hangs if an upstream connection stalls.
   - Sidebar tree tooltip enrichment: added protocol indicator to provider items and capability badges with icons (`$(code)`, `$(lightbulb)`, `$(eye)`, `$(tools)`) to model items.
   - Added optional automated VS Code Marketplace publishing step to `.github/workflows/release.yml` using `secrets.VSCE_PAT`.
+  - Added `vscode-anymodel.quickPickModel` command to quickly toggle models in/out of Copilot Chat from the Command Palette or Status Bar menu.
+  - Added dashboard keyboard navigation (keys `1`–`5` for instant tab switching) and interactive shortcuts cheatsheet modal (`?`).
+  - Added status bar indicator for active `chatLanguageModels.json` auto-sync.
+  - Enhanced `README.md` with official VS Code Marketplace badges, 1-command installation, and updated preset documentation.
 - **Local verification at handoff**: `npm test` → 28 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
-- **CI & Release**: all green on **main** (CI run 38742774818); manually published to VS Code Marketplace; releases v1.0.0 and v1.0.1 published on GitHub Releases.
+- **CI & Release**: all green on **main** (CI run 38745074394); published to VS Code Marketplace; releases v1.0.0 and v1.0.1 published on GitHub Releases.
 
 ### Suggested next steps
 1. Marketplace publishing: configure `secrets.VSCE_PAT` in GitHub repo settings to enable fully automated marketplace publishing on every release tag.

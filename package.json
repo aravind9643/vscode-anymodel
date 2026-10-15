@@ -149,6 +149,12 @@
         "icon": "$(go-to-file)"
       },
       {
+        "command": "vscode-anymodel.quickPickModel",
+        "title": "%command.quickPickModel%",
+        "category": "%category%",
+        "icon": "$(check)"
+      },
+      {
         "command": "vscode-anymodel.showLogs",
         "title": "%command.showLogs%",
         "category": "%category%",

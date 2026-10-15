@@ -559,6 +559,23 @@ body.vscode-high-contrast .kpi:hover, body.vscode-high-contrast .preset:hover { 
 .toast.ok .codicon { color: var(--ok); }
 .toast.err .codicon { color: var(--err); }
 
+/* --------------------------------------------------- shortcuts modal */
+.shortcuts-modal {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+}
+.shortcuts-backdrop {
+  position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45);
+}
+.shortcuts-card {
+  position: relative; z-index: 101; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow); width: 440px; max-width: 90vw;
+}
+.shortcuts-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.shortcuts-head h3 { font-size: 14px; font-weight: 600; }
+.shortcuts-list { display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+.shortcut-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.shortcut-keys { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--vscode-scrollbarSlider-background); }
 ::-webkit-scrollbar-thumb:hover { background: var(--vscode-scrollbarSlider-hoverBackground); }

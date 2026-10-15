@@ -1,11 +1,13 @@
 # AnyModel — Custom LLMs in Copilot Chat
 
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/AravindMerugu.vscode-anymodel.svg?label=Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=AravindMerugu.vscode-anymodel)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/AravindMerugu.vscode-anymodel.svg)](https://marketplace.visualstudio.com/items?itemName=AravindMerugu.vscode-anymodel)
+[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/AravindMerugu.vscode-anymodel.svg)](https://marketplace.visualstudio.com/items?itemName=AravindMerugu.vscode-anymodel)
 [![CI](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml/badge.svg)](https://github.com/aravind9643/vscode-anymodel/actions/workflows/ci.yml)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A51.140-blue.svg)](https://code.visualstudio.com/)
-[![Language Model Provider](https://img.shields.io/badge/API-vscode.lm-blue.svg)](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
+Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** registers Anthropic (Claude), Azure OpenAI, Ollama, LM Studio, vLLM, LocalAI, OpenRouter, OpenAI, Gemini, DeepSeek, Groq, Together, Mistral, GitHub Models, SiliconFlow, Fireworks AI, Cohere, Cloudflare Workers AI, FreeLLMAPI, OmniRoute, or any OpenAI-compatible server as a native VS Code language model provider. You get streaming, tool calling (agent mode), image input and reasoning output.
 
 ![Overview page of the AnyModel dashboard](media/screenshots/overview.png)
 
@@ -32,13 +34,17 @@ Use **local and third-party models in GitHub Copilot Chat**. **AnyModel** regist
 - **Calibrated token counts**: learned from the usage numbers the server reports, so Copilot trims context at the right point.
 - **Ollama extras**: pull models from the dashboard or sidebar, and keep models loaded with a per-provider keep-alive.
 - **Secure keys**: API keys and credential-like header values live in VS Code's encrypted secret storage, never in `settings.json`. Keys are stored per machine.
-- **Sidebar and dashboard**: an Activity Bar view with each provider's health and per-model checkboxes, plus a dashboard with instant `@tag` filters (`@tools`, `@coding`, `@reasoning`, `@vision`, `@fast`), search keyboard shortcuts (Ctrl+F / Cmd+F), 1-click model ID copy, and smooth scrolling for thousands of models.
+- **Sidebar and dashboard**: an Activity Bar view with each provider's health and per-model checkboxes, plus a dashboard with instant `@tag` filters (`@tools`, `@coding`, `@reasoning`, `@vision`, `@fast`), search keyboard shortcuts (Ctrl+F / Cmd+F, 1-5 tab switching, ? cheatsheet), 1-click model ID copy, and smooth scrolling for thousands of models.
 
 ## Getting started
 
-1. Install the `.vsix`:
+1. Install directly from the VS Code Marketplace:
    ```bash
-   code --install-extension vscode-anymodel-1.0.0.vsix --force
+   code --install-extension AravindMerugu.vscode-anymodel
+   ```
+   Or install a downloaded `.vsix` file:
+   ```bash
+   code --install-extension vscode-anymodel-1.0.1.vsix --force
    ```
 2. Open the **AnyModel** view in the Activity Bar and click **Add Provider**.
 3. Pick a preset (or *Custom*), enter the API key if needed, then click **Test connection** and **Add provider**.
@@ -60,6 +66,10 @@ The `/v1` suffix is optional. The editor shows the exact chat URL it will call.
 | Groq | `https://api.groq.com/openai/v1` |
 | Gemini | `https://generativelanguage.googleapis.com/v1beta/openai` |
 | Anthropic | `https://api.anthropic.com` (Anthropic API) |
+| SiliconFlow | `https://api.siliconflow.cn/v1` |
+| Fireworks AI | `https://api.fireworks.ai/inference/v1` |
+| Cohere | `https://api.cohere.com/v2` |
+| Cloudflare AI | `https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1` |
 | Azure OpenAI | `https://<resource>.openai.azure.com/openai/v1`, key sent as `api-key`; add deployment names as manual model IDs |
 
 Under *Advanced* you can set:
@@ -98,6 +108,7 @@ Under *Advanced* you can set:
 | Command | What it does |
 |---|---|
 | **AnyModel: Open Dashboard** | Models, providers, routes and settings |
+| **AnyModel: Toggle Copilot Model…** | Quick-pick list to add or remove any model from Copilot Chat with 1 keystroke |
 | **AnyModel: Add Provider** | Provider editor with presets and local scanner |
 | **AnyModel: Refresh Models** | Re-fetches every provider's model list |
 | **AnyModel: Verify Untested Models** | Health-checks models without a fresh result (asks first for large remote runs) |

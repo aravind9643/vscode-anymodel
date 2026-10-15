@@ -166,6 +166,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       <header class="page-head">
         <div class="page-title"><h1 id="pageTitle"></h1><p id="pageDesc"></p></div>
         <div class="page-actions">
+          <button class="btn ghost" data-action="toggle-shortcuts" id="shortcutsBtn" title="Keyboard shortcuts (?)">${icon("question")}<span class="btn-label">Help</span></button>
           <button class="btn" data-action="refresh" id="refreshBtn" title="Re-fetch model lists from every provider">${icon("refresh")}<span class="btn-label">Refresh</span></button>
           <button class="btn primary" data-action="verify-untested" id="verifyBtn">${icon("beaker")}Verify</button>
         </div>
@@ -196,6 +197,21 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <section class="panel scroll" id="panel-routes"></section>
         <section class="panel scroll" id="panel-settings"></section>
       </main>
+    </div>
+    <div id="shortcutsModal" class="shortcuts-modal hidden" role="dialog" aria-label="Keyboard Shortcuts">
+      <div class="shortcuts-backdrop" data-action="toggle-shortcuts"></div>
+      <div class="shortcuts-card">
+        <div class="shortcuts-head">
+          <h3>Keyboard Shortcuts</h3>
+          <button class="icon-btn" data-action="toggle-shortcuts" aria-label="Close shortcuts">${icon("close")}</button>
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd> – <kbd>5</kbd></span><span>Switch tabs (Overview, Models, Providers, Routes, Settings)</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>/</kbd></span><span>Focus model search filter</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Esc</kbd></span><span>Clear search / close popups, modal, and editor</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>?</kbd></span><span>Toggle shortcuts cheatsheet</span></div>
+        </div>
+      </div>
     </div>
     <div id="toast" class="toast hidden" role="status"></div>`;
 
@@ -1402,6 +1418,10 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     logs: () => post({ type: "showLogs" }),
     "append-chat-lm": () => post({ type: "appendToChatLanguageModels" }),
     "open-chat-lm": () => post({ type: "openChatLanguageModels" }),
+    "toggle-shortcuts": () => {
+      const modal = $("#shortcutsModal");
+      modal?.classList.toggle("hidden");
+    },
   };
 
   document.addEventListener("click", (ev) => {
@@ -1478,7 +1498,17 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
 
   document.addEventListener("keydown", (ev) => {
     const tag = (ev.target as HTMLElement)?.tagName;
-    if (ev.key === "/" && ui.tab === "models" && tag !== "INPUT" && tag !== "TEXTAREA") {
+    const isEditing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+    if (ev.key === "?" && !isEditing) {
+      ev.preventDefault();
+      actions["toggle-shortcuts"]();
+    } else if (ev.key >= "1" && ev.key <= "5" && !isEditing && !ui.editor && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+      ev.preventDefault();
+      const tabs = ["overview", "models", "providers", "routes", "settings"];
+      ui.tab = tabs[Number(ev.key) - 1];
+      persist();
+      renderHeader();
+    } else if (ev.key === "/" && ui.tab === "models" && !isEditing) {
       ev.preventDefault();
       $("#q").focus();
     } else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "f" && ui.tab === "models") {
@@ -1486,6 +1516,8 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
       const qInput = ($("#q") as unknown) as HTMLInputElement | null;
       qInput?.focus();
       qInput?.select();
+    } else if (ev.key === "Escape" && !$("#shortcutsModal")?.classList.contains("hidden")) {
+      $("#shortcutsModal")?.classList.add("hidden");
     } else if (ev.key === "Escape" && ui.menu) {
       ui.menu = null;
       renderModels();

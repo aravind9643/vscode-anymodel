@@ -28,7 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(log, engine, chatProvider, tree, statusBar);
   context.subscriptions.push(vscode.lm.registerLanguageModelChatProvider("custom-llm-router", chatProvider));
 
-  const updateStatusBar = () => renderStatusBar(statusBar, engine);
+  const updateStatusBar = () => renderStatusBar(statusBar, engine, store);
   updateStatusBar();
   context.subscriptions.push(engine.onDidChange(updateStatusBar));
 
@@ -422,9 +422,59 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  register("quickPickModel", async () => {
+    await engine.ensureDiscovered();
+    const models = engine.getModels();
+    if (!models.length) {
+      void vscode.window.showInformationMessage(vscode.l10n.t("No models discovered. Add a provider first."));
+      return;
+    }
+    const items: (vscode.QuickPickItem & { key: string; currentlySelected: boolean })[] = models.map((m) => {
+      const icon = m.selected
+        ? "$(check)"
+        : m.status === "working"
+        ? "$(circle-filled)"
+        : m.status === "failed"
+        ? "$(error)"
+        : "$(circle-outline)";
+      const caps = [
+        m.caps.coding && "Coding",
+        m.caps.reasoning && "Reasoning",
+        m.caps.vision && "Vision",
+        m.caps.tools && "Tools",
+      ].filter(Boolean).join(" · ");
+      const statusNote = m.status === "working" ? `${m.latencyMs}ms` : m.status;
+      return {
+        label: `${icon} ${m.name}`,
+        description: `[${m.providerName}] ${m.id}`,
+        detail: `${m.selected ? "$(pass) Active in Copilot · " : ""}${statusNote}${caps ? ` · ${caps}` : ""} · ${Math.round(m.contextWindow / 1000)}k ctx`,
+        key: m.key,
+        currentlySelected: m.selected,
+      };
+    });
+    const pick = await vscode.window.showQuickPick(items, {
+      placeHolder: vscode.l10n.t("Select a model to toggle in or out of GitHub Copilot Chat"),
+      matchOnDescription: true,
+      matchOnDetail: true,
+    });
+    if (!pick) return;
+    const model = engine.getModel(pick.key);
+    if (!model) return;
+    const willSelect = !pick.currentlySelected;
+    await store.setSelected([pick.key], willSelect);
+    if (willSelect && model.status === "untested") {
+      void engine.verify([model]);
+    }
+    const statusMsg = willSelect
+      ? vscode.l10n.t("Added “{0}” to Copilot Chat.", model.name)
+      : vscode.l10n.t("Removed “{0}” from Copilot Chat.", model.name);
+    void vscode.window.showInformationMessage(statusMsg);
+  });
+
   register("showMenu", async () => {
     const items: (vscode.QuickPickItem & { run?: () => unknown })[] = [
       { label: `$(dashboard) ${vscode.l10n.t("Open Dashboard")}`, detail: vscode.l10n.t("Manage providers, verify models and choose what Copilot shows"), run: () => showDashboard() },
+      { label: `$(check) ${vscode.l10n.t("Toggle Copilot Model…")}`, detail: vscode.l10n.t("Quickly add or remove a model from Copilot Chat"), run: () => vscode.commands.executeCommand(`${CMD}.quickPickModel`) },
       { label: `$(file-code) ${vscode.l10n.t("Append to chatLanguageModels.json")}`, detail: vscode.l10n.t("Export providers and models to VS Code native Custom Endpoints"), run: () => vscode.commands.executeCommand(`${CMD}.appendToChatLanguageModels`) },
       { label: `$(go-to-file) ${vscode.l10n.t("Open chatLanguageModels.json")}`, detail: vscode.l10n.t("View or edit the native custom endpoints configuration file"), run: () => vscode.commands.executeCommand(`${CMD}.openChatLanguageModels`) },
       { label: `$(star) ${vscode.l10n.t("Curate Top 10 Models for Copilot")}`, detail: vscode.l10n.t("Keep Copilot's dropdown clean: pick top 10 fastest coding/reasoning models"), run: () => vscode.commands.executeCommand(`${CMD}.curateTop`) },
@@ -486,7 +536,7 @@ function checkProxyConfiguration(log: vscode.LogOutputChannel) {
   }
 }
 
-function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine) {
+function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine, store: ProviderStore) {
   const statuses = engine.getProviderStatuses().filter((s) => s.enabled);
   const active = engine.getCopilotModels().length + engine.getRoutes().filter((r) => r.available).length;
   const offline = statuses.filter((s) => s.online === false);
@@ -507,6 +557,9 @@ function renderStatusBar(item: vscode.StatusBarItem, engine: ModelEngine) {
     for (const s of statuses) {
       const icon = s.online === undefined ? "$(loading~spin)" : s.online ? "$(pass-filled)" : "$(error)";
       md.appendMarkdown(`${icon} ${s.name} — ${s.online === false ? s.error || "offline" : vscode.l10n.t("{0} models", s.modelCount)}  \n`);
+    }
+    if (store.autoSyncChatLanguageModels) {
+      md.appendMarkdown(`\n$(sync) ${vscode.l10n.t("Native BYOK Auto-Sync: Active")}\n`);
     }
     md.appendMarkdown(`\n[$(dashboard) ${vscode.l10n.t("Open Dashboard")}](command:${CMD}.openDashboard)`);
   }
