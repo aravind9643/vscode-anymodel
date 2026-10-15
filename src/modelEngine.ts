@@ -1092,10 +1092,14 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     if (/gemini/.test(idLower)) contextWindow = 1048576;
     else if (/claude/.test(idLower)) contextWindow = 200000;
     else if (/gpt-4\.1|gpt-5/.test(idLower)) contextWindow = 400000;
-    else if (/gpt-4o|(^|[\/\-])o[134]/.test(idLower)) contextWindow = 128000;
+    else if (/(^|[\/\-])o[134]/.test(idLower)) contextWindow = 200000;
+    else if (/gpt-4o/.test(idLower)) contextWindow = 128000;
+    else if (/deepseek/.test(idLower)) contextWindow = 65536;
+    else if (/llama-?3(\.0)?(-|$)/.test(idLower) && !/llama-?3\.[123]/.test(idLower)) contextWindow = 8192;
     else contextWindow = 131072;
   }
-  const maxOutputTokens = Math.min(maxOut || Math.min(16384, Math.max(2048, Math.floor(contextWindow / 4))), Math.floor(contextWindow / 2));
+  const defaultMax = /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower) ? 64000 : 16384;
+  const maxOutputTokens = Math.min(maxOut || Math.min(defaultMax, Math.max(2048, Math.floor(contextWindow / 4))), Math.floor(contextWindow / 2));
   const maxInputTokens = maxIn || Math.max(1024, contextWindow - maxOutputTokens);
   return { contextWindow, maxOutputTokens, maxInputTokens };
 }

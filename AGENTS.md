@@ -3,7 +3,7 @@
 > Single source of truth for coding agents. `CLAUDE.md` imports this file; `GEMINI.md` is a verbatim copy (re-copy after editing: `cp AGENTS.md GEMINI.md`). Start with **§7 Current State & Handoff**.
 
 ## 1. Project Overview
-**vscode-custom-llm-router** is a VS Code extension that lets developers use custom, local, and third-party LLMs inside **GitHub Copilot Chat** through VS Code's native Language Model API (`vscode.lm.registerLanguageModelChatProvider`).
+**AnyModel** (`vscode-custom-llm-router`) is a VS Code extension that lets developers use custom, local, and third-party LLMs inside **GitHub Copilot Chat** through VS Code's native Language Model API (`vscode.lm.registerLanguageModelChatProvider`).
 
 Supported backends include:
 - Local engines: **Ollama**, **LM Studio**, **vLLM**, **LocalAI**
@@ -151,12 +151,18 @@ npx @vscode/vsce package --no-dependencies
 
 ## 7. Current State & Handoff
 
-_Last updated: 2026-10-14._
+_Last updated: 2026-10-15._
 
 ### Where things are
 - **Branch `redesign/v2`**: comprehensive resilience, route policies, prompt caching, telemetry export, budget warnings, visual spend progress meter, local server scanning, presets, proxy prefix stripping & model name prettifying, top model curation, filter chips (canonical, 128k+ ctx, <250ms), failed verification breakdown, smart route auto-generation (including Cost Saver and sub-provider diversity), cache auto-pruning, route member search filter, single-model transient retry, sidebar tree filtering, OmniRoute / multi-provider gateway support (sub-provider detection, provider filter dropdown hierarchy, sub-provider badges, and unconfigured upstream diagnostic), and native VS Code `chatLanguageModels.json` export & sync provision (commands to append/open `chatLanguageModels.json`, auto-sync toggle, and `customLlmRouter.registerChatProvider` setting to disable extension LM chat provider and prevent duplicate models in Copilot).
-- **Dashboard redesign (uncommitted on `redesign/v2` at handoff)**: nav rail + Overview page, one-row Models toolbar with Filters toggle and "⋯" menu, new provider cards, grouped presets with sticky editor footer, refreshed Routes/Settings (Danger zone). Protocol change: `DashboardTab` gained `"overview"`. README screenshots refreshed (`overview.png` added).
-- **Local verification at handoff**: `npm test` → 26 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
+- **Branding & Dashboard Enhancements**:
+  - Rebranded extension to **AnyModel** (`AnyModel — Custom LLMs in Copilot Chat`) across manifest, sidebar, status bar, and dashboard.
+  - Consistent flat FontAwesome-style router icon (`media/icon.png`, `media/sidebar-icon.svg`, and inline SVG in webview).
+  - Enriched Copilot model picker item details with provider, subprovider, context window tokens, latency, real-time speed (tok/s), and pricing.
+  - Added `@tag` search filters (`@tools`, `@vision`, `@reasoning`, `@coding`, `@fast`, `@copilot`, `@failed`, `@untested`, `@working`, `@<provider>`) in the Models dashboard.
+  - Added 1-click model ID copy button with toast notification.
+  - Added Anthropic Claude 3.7 Sonnet pricing & updated model heuristic bounds for modern reasoning models.
+- **Local verification at handoff**: `npm test` → 27 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
 - **CI**: green on **ubuntu-latest and windows-latest**.
 
 ### Suggested next steps
@@ -175,3 +181,4 @@ _Last updated: 2026-10-14._
 - **Screenshots** need `npx playwright install chromium` once; output goes to `test/visual/out/`; `--readme` refreshes `media/screenshots/`.
 - **Pushing from this machine**: git has no stored HTTPS credentials; `gh` is logged in. Push with `git -c credential.helper= -c "credential.helper=!gh auth git-credential" push` (does not change global git config).
 - **VS Code API facts learned the hard way**: `LanguageModelChat` exposes `maxInputTokens` but not `maxOutputTokens`; `LanguageModelChatMessageRole.System` (3) exists at runtime but not in stable typings; Copilot sends non-image `LanguageModelDataPart`s (e.g. `cache_control`) that must not be forwarded as images; the Anthropic SDK refuses to send without credentials (no HTTP status), which `anthropicTransport.listModels` maps to a 401-like `needsKey`.
+
