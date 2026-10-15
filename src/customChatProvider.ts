@@ -223,7 +223,9 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       } catch (err) {
         // One retry for rate limits / server errors — but not inside a route, where the next model is faster.
         if (!(err instanceof HttpError) || !(err.status === 429 || err.status >= 500) || isRoute || tracked.firstAt || token.isCancellationRequested) throw err;
-        await new Promise((r) => setTimeout(r, Math.min(err.retryAfterMs ?? 1500, 8000)));
+        const baseDelay = err.retryAfterMs ?? 1500;
+        const jittered = Math.min(Math.round(baseDelay * (0.85 + Math.random() * 0.3)), 8000);
+        await new Promise((r) => setTimeout(r, jittered));
         if (token.isCancellationRequested) return;
         result = await transport.chat(provider, auth, req, sink, abort.signal);
       }
@@ -249,7 +251,9 @@ export class CustomLLMChatProvider implements vscode.LanguageModelChatProvider, 
       if (err instanceof HttpError) {
         this._log.warn(`[chat] ${model.key}: ${err.message}`);
         if (err.status === 429 || err.status >= 500) {
-          this._engine.backoffModel(model.key, Math.min(err.retryAfterMs ?? 30000, 60000));
+          const baseBackoff = err.retryAfterMs ?? 30000;
+          const jitteredBackoff = Math.min(Math.round(baseBackoff * (0.9 + Math.random() * 0.2)), 60000);
+          this._engine.backoffModel(model.key, jitteredBackoff);
         }
         // Only definitive "this model does not exist here" errors evict a model from Copilot.
         if (err.status === 404 || /model.*(not found|does not exist|not available)/i.test(err.message)) {

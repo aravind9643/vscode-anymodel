@@ -162,6 +162,11 @@ _Last updated: 2026-10-15._
   - Added `@tag` search filters (`@tools`, `@vision`, `@reasoning`, `@coding`, `@fast`, `@copilot`, `@failed`, `@untested`, `@working`, `@<provider>`) in the Models dashboard.
   - Added 1-click model ID copy button with toast notification.
   - Added Anthropic Claude 3.7 Sonnet pricing & updated model heuristic bounds for modern reasoning models.
+  - Expanded sub-provider map & regexes for Moonshot AI, Zhipu AI, MiniMax, Baichuan, 01.AI, StepFun, InternLM, and Microsoft.
+  - Added Ollama/vLLM quantization tag stripping in model name prettifying.
+  - Added jittered exponential backoff for rate limits and server errors.
+  - Added dashboard Ctrl+F / Cmd+F search focusing, Esc search clearing, and provider card bulk selection buttons.
+  - Added automatic `.bak` backup creation prior to modifying `chatLanguageModels.json`.
 - **Local verification at handoff**: `npm test` → 27 unit + 7 tree + 18 dashboard tests passing; `npm run test:integration` → 5 passing on VS Code 1.141.
 - **CI**: green on **ubuntu-latest and windows-latest**.
 

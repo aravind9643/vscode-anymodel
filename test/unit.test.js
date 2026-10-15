@@ -360,6 +360,8 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(prettifyModelName("auto", "Local"), "Local Auto");
       assert.strictEqual(prettifyModelName("auto/coding", "OmniRoute"), "OmniRoute Auto Coding");
       assert.strictEqual(prettifyModelName("auto/fast", "OmniRoute"), "OmniRoute Auto Fast");
+      assert.strictEqual(prettifyModelName("qwen2.5-coder-14b-instruct-q4_k_m", "Ollama"), "Qwen2.5 Coder 14b Instruct");
+      assert.strictEqual(prettifyModelName("deepseek-r1-distill-qwen-14b-fp16", "vLLM"), "DeepSeek R1 Distill Qwen 14b");
     }],
 
     ["detectSubProvider correctly maps prefixes, organizations and model families", () => {
@@ -376,11 +378,16 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.strictEqual(detectSubProvider("auto/coding"), "OmniRoute Auto");
       assert.strictEqual(detectSubProvider("qwen/qwen-2.5-coder"), "Qwen");
       assert.strictEqual(detectSubProvider("together/llama-3-70b"), "Together AI");
+      assert.strictEqual(detectSubProvider("moonshotai/kimi-k2"), "Moonshot AI");
+      assert.strictEqual(detectSubProvider("zhipu/glm-4-plus"), "Zhipu AI");
+      assert.strictEqual(detectSubProvider("microsoft/phi-4"), "Microsoft");
       assert.strictEqual(detectSubProvider("claude-3-5-sonnet", "anthropic"), "Anthropic");
       assert.strictEqual(detectSubProvider("gpt-4o"), "OpenAI");
       assert.strictEqual(detectSubProvider("claude-3-7-sonnet"), "Anthropic");
       assert.strictEqual(detectSubProvider("deepseek-r1"), "DeepSeek");
       assert.strictEqual(detectSubProvider("gemini-2.0-flash"), "Google");
+      assert.strictEqual(detectSubProvider("kimi-k2"), "Moonshot AI");
+      assert.strictEqual(detectSubProvider("glm-4-air"), "Zhipu AI");
     }],
 
     ["curateTopSelection, deselectAll, clearFailedCache, and autoGenerateRoutes", async () => {
@@ -456,8 +463,10 @@ const token = () => new vscode.CancellationTokenSource().token;
       assert.ok(Array.isArray(parsed));
       assert.ok(parsed.some((g) => g.name === "ExistingCustom"), "Preserves existing custom entry");
       assert.ok(parsed.some((g) => g.name === "Mock2"), "Contains Mock2 entry");
+      assert.ok(fs.existsSync(`${tmpFile}.bak`), "Creates a .bak backup before writing to chatLanguageModels.json");
 
       try { fs.unlinkSync(tmpFile); } catch {}
+      try { fs.unlinkSync(`${tmpFile}.bak`); } catch {}
 
       // 3. Test registerChatProvider toggle
       assert.strictEqual(store.registerChatProvider, true);

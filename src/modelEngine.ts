@@ -1089,7 +1089,8 @@ export function slug(s: string) {
 export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxIn?: number) {
   let contextWindow = ctx;
   if (!contextWindow) {
-    if (/gemini/.test(idLower)) contextWindow = 1048576;
+    if (/gemini.*(2\.[05]|pro)/.test(idLower)) contextWindow = 2097152;
+    else if (/gemini/.test(idLower)) contextWindow = 1048576;
     else if (/claude/.test(idLower)) contextWindow = 200000;
     else if (/gpt-4\.1|gpt-5/.test(idLower)) contextWindow = 400000;
     else if (/(^|[\/\-])o[134]/.test(idLower)) contextWindow = 200000;
@@ -1098,7 +1099,11 @@ export function inferBounds(idLower: string, ctx?: number, maxOut?: number, maxI
     else if (/llama-?3(\.0)?(-|$)/.test(idLower) && !/llama-?3\.[123]/.test(idLower)) contextWindow = 8192;
     else contextWindow = 131072;
   }
-  const defaultMax = /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower) ? 64000 : 16384;
+  const defaultMax = /claude-3-[57]|(^|[\/\-])o[134]/.test(idLower)
+    ? 64000
+    : /(codestral|mistral-large)/.test(idLower)
+    ? 32768
+    : 16384;
   const maxOutputTokens = Math.min(maxOut || Math.min(defaultMax, Math.max(2048, Math.floor(contextWindow / 4))), Math.floor(contextWindow / 2));
   const maxInputTokens = maxIn || Math.max(1024, contextWindow - maxOutputTokens);
   return { contextWindow, maxOutputTokens, maxInputTokens };
@@ -1142,6 +1147,22 @@ const SUB_PROVIDER_MAP: Record<string, string> = {
   azure: "Azure",
   aws: "AWS Bedrock",
   bedrock: "AWS Bedrock",
+  moonshot: "Moonshot AI",
+  moonshotai: "Moonshot AI",
+  kimi: "Moonshot AI",
+  minimax: "MiniMax",
+  baichuan: "Baichuan",
+  "01-ai": "01.AI",
+  yi: "01.AI",
+  stepfun: "StepFun",
+  step: "StepFun",
+  internlm: "InternLM",
+  zhipu: "Zhipu AI",
+  zhipuai: "Zhipu AI",
+  glm: "Zhipu AI",
+  chatglm: "Zhipu AI",
+  microsoft: "Microsoft",
+  msft: "Microsoft",
 };
 
 /**
@@ -1184,6 +1205,10 @@ export function detectSubProvider(id: string, metaOwnedBy?: string): string | un
   if (/^(llama|codellama)\b/i.test(lower)) return "Meta";
   if (/^(mistral|codestral|mixtral)\b/i.test(lower)) return "Mistral";
   if (/^grok\b/i.test(lower)) return "xAI";
+  if (/^(kimi|moonshot)\b/i.test(lower)) return "Moonshot AI";
+  if (/^(glm|chatglm)\b/i.test(lower)) return "Zhipu AI";
+  if (/^phi\b/i.test(lower)) return "Microsoft";
+  if (/^command\b/i.test(lower)) return "Cohere";
 
   return undefined;
 }
@@ -1218,6 +1243,9 @@ export function prettifyModelName(id: string, providerName: string): string {
     base = base.replace(dateMatch[0], "");
   }
 
+  // Detect and strip quantization suffixes (-q4_k_m, -fp16, -int4, etc.)
+  base = base.replace(/-(q[2-8]_[k0-9_a-z]+|fp16|bf16|int[48]|awq|gptq)\b/i, "");
+
   // Detect and strip effort/quant tiers (-low, -medium, -high)
   const tierMatch = /-(low|medium|high)$/i.exec(base);
   if (tierMatch) {
@@ -1234,7 +1262,10 @@ export function prettifyModelName(id: string, providerName: string): string {
     .replace(/^gemini-/i, "Gemini-")
     .replace(/^qwen-/i, "Qwen-")
     .replace(/^mistral-/i, "Mistral-")
-    .replace(/^codestral-/i, "Codestral-");
+    .replace(/^codestral-/i, "Codestral-")
+    .replace(/^microsoft-|^phi-/i, "Phi-")
+    .replace(/^zhipu-|^glm-/i, "GLM-")
+    .replace(/^moonshot-|^kimi-/i, "Kimi-");
 
   // Version numbers like 3-5 -> 3.5, 4-6 -> 4.6 (1-2 digits only)
   base = base.replace(/\b(\d{1,2})-(\d{1,2})\b/g, "$1.$2");

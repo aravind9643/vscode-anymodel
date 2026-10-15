@@ -172,7 +172,7 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <section class="panel" id="panel-models">
           <div class="toolbar">
             <div class="row">
-              <div class="search">${icon("search")}<input type="search" id="q" placeholder="Search models or @tools, @vision…" aria-label="Search models"><kbd>/</kbd></div>
+              <div class="search">${icon("search")}<input type="search" id="q" placeholder="Filter models by name or @tools, @vision, @reasoning, @fast…" aria-label="Search models"><kbd>/</kbd></div>
               <select id="provSel" aria-label="Filter by provider"></select>
               <div class="segmented" id="statusSeg" role="group" aria-label="Filter by status"></div>
               <button class="btn ghost" data-action="toggle-filters" id="filtersBtn" aria-controls="chips"></button>
@@ -807,6 +807,8 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
         <button class="btn small" data-action="verify-provider" data-name="${name}" ${p.enabled && models.length && !S.verifying ? "" : "disabled"} title="Re-test every model of this provider">${icon("beaker")}Verify models</button>
         ${p.kind === "ollama" && p.enabled ? `<button class="btn small" data-action="pull-ollama" data-name="${name}" title="Download a model from the Ollama library">${icon("cloud-download")}Pull model</button>` : ""}
         <span class="grow"></span>
+        ${working > 0 ? `<button class="icon-btn" data-action="provider-select-working" data-name="${name}" title="Select all ${working} working model(s) for Copilot">${icon("check-all")}</button>` : ""}
+        ${inCopilot > 0 ? `<button class="icon-btn" data-action="provider-deselect" data-name="${name}" title="Deselect all models from this provider">${icon("clear-all")}</button>` : ""}
         <button class="icon-btn" data-action="edit-provider" data-name="${name}" title="Edit provider" aria-label="Edit ${name}">${icon("edit")}</button>
         <button class="icon-btn danger" data-action="delete-provider" data-name="${name}" title="Delete provider" aria-label="Delete ${name}">${icon("trash")}</button>
       </footer>
@@ -1334,7 +1336,22 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     "edit-provider": (el) => openEditor(el.dataset.name),
     "close-editor": closeEditor,
     "toggle-provider": (el) => post({ type: "toggleProvider", name: el.dataset.name, enabled: el.checked }),
-    "delete-provider": (el) => post({ type: "deleteProvider", name: el.dataset.name }),
+    "provider-select-working": (el) => {
+      const pName = el.dataset.name;
+      const keys = S.models.filter((m) => m.providerName === pName && m.status === "working").map((m) => m.key);
+      if (keys.length) {
+        post({ type: "setSelected", keys, selected: true });
+        toast(`Selected ${keys.length} model(s) for ${pName}`);
+      }
+    },
+    "provider-deselect": (el) => {
+      const pName = el.dataset.name;
+      const keys = S.models.filter((m) => m.providerName === pName && m.selected).map((m) => m.key);
+      if (keys.length) {
+        post({ type: "setSelected", keys, selected: false });
+        toast(`Deselected ${keys.length} model(s) for ${pName}`);
+      }
+    },
     "verify-provider": (el) =>
       post({ type: "verify", keys: S.models.filter((m) => m.providerName === el.dataset.name).map((m) => m.key), force: true }),
     "test-provider": (el) => {
@@ -1459,10 +1476,23 @@ declare function acquireVsCodeApi(): { postMessage(msg: WebviewMessage): void; g
     if (ev.key === "/" && ui.tab === "models" && tag !== "INPUT" && tag !== "TEXTAREA") {
       ev.preventDefault();
       $("#q").focus();
+    } else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "f" && ui.tab === "models") {
+      ev.preventDefault();
+      const qInput = ($("#q") as unknown) as HTMLInputElement | null;
+      qInput?.focus();
+      qInput?.select();
     } else if (ev.key === "Escape" && ui.menu) {
       ui.menu = null;
       renderModels();
       (document.querySelector('[data-action="menu"]') as HTMLElement | null)?.focus();
+    } else if (ev.key === "Escape" && (ev.target as HTMLElement)?.id === "q") {
+      const qInput = ($("#q") as unknown) as HTMLInputElement | null;
+      if (qInput && qInput.value) {
+        qInput.value = "";
+        ui.q = "";
+        persist();
+        renderModels();
+      }
     } else if (ev.key === "Escape" && ui.editor && tag !== "TEXTAREA") {
       closeEditor();
     } else if (ev.key === "Enter" && tag === "INPUT" && (ev.target as HTMLElement).closest("#limitsRow")) {

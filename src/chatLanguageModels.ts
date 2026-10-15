@@ -229,6 +229,14 @@ export async function appendOrSyncChatLanguageModels(
     }
   }
 
+  if (fs.existsSync(filePath)) {
+    try {
+      await fs.promises.copyFile(filePath, `${filePath}.bak`);
+    } catch {
+      // non-fatal backup error
+    }
+  }
+
   const jsonStr = JSON.stringify(existing, null, 2) + "\n";
   await fs.promises.writeFile(filePath, jsonStr, "utf-8");
 
